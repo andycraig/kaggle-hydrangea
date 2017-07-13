@@ -31,7 +31,6 @@ test_set = test_set.iloc[:n_test]
 # Load the train and test images.
 def read_img(img_path):
 	img = Image.open(img_path).resize((img_x, img_y)) # was 128x128
-	img.save("../temp/a.jpg")
 	# Resize and change pixel range from 0-255 to 0-1.
 	img = np.array(img.getdata()).reshape([img_x, img_y, n_channels]) / 255
 	return img
