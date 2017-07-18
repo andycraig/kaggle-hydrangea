@@ -1,14 +1,16 @@
+#!/usr/bin/env python3
+
 # Heavily based on code by Finlay Liu, from:
 # https://www.kaggle.com/finlay/naive-bagging-cnn-pb0-985?scriptVersionId=1187890
 
 import model
 from PIL import Image
-import tqdm
+#import tqdm
 import sklearn
 import pandas as pd
 import numpy as np
 from tensorflow.contrib import keras
-from sklearn import model_selection
+from sklearn import cross_validation
 
 max_n_imgs = np.inf # np.inf to use all data.
 epochs = 1000 # Originally 1000.
@@ -48,14 +50,14 @@ train_labels = np.array(train_set['invasive'].iloc[:])
 
 # Define n-fold cross validation splits and evaluation metric.
 print("Training with ", n_folds, " folds.")
-kf = model_selection.KFold(n_splits=n_folds, shuffle=True)
+kf = cross_validation.KFold(n_train, n_folds=n_folds, shuffle=True)
 eval_fun = sklearn.metrics.roc_auc_score
 
 # Initialise prediction placeholders.
 preds_test = np.zeros(len(test_imgs), dtype=np.float)
 train_losses, test_losses = [], []
 
-for i, (i_train, i_test) in enumerate(kf.split(train_imgs)):
+for i, (i_train, i_test) in enumerate(kf):
 	print("Starting iteration ", i)
 	# Elements returned by kf.split are arrays of length 1 that contain
 	# the array of indices, so pull out the arrays.
