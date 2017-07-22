@@ -1,18 +1,20 @@
 # Heavily based on code by Finlay Liu, from:
 # https://www.kaggle.com/finlay/naive-bagging-cnn-pb0-985?scriptVersionId=1187890
 
-import model
+from model import get_model
 from PIL import Image
 import tqdm
 import sklearn
 import pandas as pd
 import numpy as np
+import pickle
 from tensorflow.contrib import keras
 from sklearn import model_selection
 
 max_n_imgs = np.inf # np.inf to use all data.
-epochs = 1000 # Originally 1000.
-batch_size = 64 # Originally 64.
+epochs = 1 # Originally 1000.
+batch_size = 1 # Originally 64.
+steps_per_epoch = 2 # len(train_imgs) / batch_size # Originally len(train_imgs) / batch_size ?
 n_folds = 8 # Originally 8.
 img_x, img_y, n_channels = 128, 128, 3
 
@@ -29,19 +31,44 @@ train_set = train_set.iloc[:n_train]
 test_set = test_set.iloc[:n_test]
 
 # Load the train and test images.
-def read_img(img_path):
-	img = Image.open(img_path).resize((img_x, img_y)) # was 128x128
-	# Resize and change pixel range from 0-255 to 0-1.
-	img = np.array(img.getdata()).reshape([img_x, img_y, n_channels]) / 255
-	return img
-train_imgs = np.zeros([n_train, img_x, img_y, n_channels])
-test_imgs = np.zeros([n_test, img_x, img_y, n_channels])
+# Helper function.
+def load_img_matrix(n_imgs, folder_name, names_and_labels):
+	imgs_matrix = np.zeros([n_imgs, img_x, img_y, n_channels])
+	for i, img_name in enumerate(names_and_labels['name'].iloc[:]):
+		img_src = '../data/' + folder_name + '/img/' + str(img_name) + '.jpg'
+		img = Image.open(img_src).resize((img_x, img_y)) # was 128x128
+		# Resize and change pixel range from 0-255 to 0-1.
+		imgs_matrix[i,:,:,:] = np.array(img.getdata()).reshape([img_x, img_y, n_channels]) / 255
+	return imgs_matrix
+
+# Load train images from pickle if possible.
 print("Loading train images...")
-for i, img_path in enumerate(train_set['name'].iloc[:]):
-	train_imgs[i,:,:,:] = read_img('../data/train/img/' + str(img_path) + '.jpg')
+train_pkl = '../data/train/train.pickle'
+try:
+	print('Trying to load from pickle...')
+	with open(train_pkl, 'rb') as f:
+		train_imgs = pickle.load(f)
+	print('Loaded from pickle.')
+except FileNotFoundError as e:
+	print('Pickle not found. Loading original images...')
+	train_imgs = load_img_matrix(n_train, 'train', train_set)
+	with open(train_pkl, 'wb') as f:
+		pickle.dump(train_imgs, f)
+	print('Saved as pickle.')
+# Load test images from pickle if possible.
 print("Loading test images...")
-for i, img_path in enumerate(test_set['name'].iloc[:]):
-	test_imgs[i,:,:,:] = read_img('../data/test/img/' + str(img_path) + '.jpg')
+test_pkl = '../data/test/test.pickle'
+try:
+	print('Trying to load from pickle...')
+	with open(test_pkl, 'rb') as f:
+		test_imgs = pickle.load(f)
+	print('Loaded from pickle.')
+except FileNotFoundError as e:
+	print('Pickle not found. Loading original images...')
+	test_imgs = load_img_matrix(n_test, 'test', test_set)
+	with open(test_pkl, 'wb') as f:
+		pickle.dump(test_imgs, f)
+	print('Saved as pickle.')
 
 print(train_imgs.shape)
 train_labels = np.array(train_set['invasive'].iloc[:])
@@ -82,12 +109,12 @@ for i, (i_train, i_test) in enumerate(kf.split(train_imgs)):
         fill_mode = 'nearest')
 	datagen.fit(x_tr)
 
-	model = model.get_model()
+	model = get_model()
 	earlystop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=15, verbose=0, mode='auto')
 	# Do the fit.
 	model.fit_generator(datagen.flow(x_tr, y_tr, batch_size=batch_size),
 		validation_data=(x_val, y_val), callbacks=[earlystop],
-		steps_per_epoch=len(train_imgs) / batch_size,
+		steps_per_epoch=steps_per_epoch,
 		epochs=epochs,
 		verbose=2)
 
