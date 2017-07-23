@@ -3,6 +3,7 @@
 # Heavily based on code by Finlay Liu, from:
 # https://www.kaggle.com/finlay/naive-bagging-cnn-pb0-985?scriptVersionId=1187890
 
+from utils import datetime_for_filename
 from model import get_model
 from PIL import Image
 #import tqdm
@@ -16,8 +17,8 @@ from sklearn import cross_validation
 max_n_imgs = np.inf # np.inf to use all data.
 epochs = 1 # Originally 1000.
 batch_size = 1 # Originally 64.
-steps_per_epoch = 2 # len(train_imgs) / batch_size # Originally len(train_imgs) / batch_size ?
-n_folds = 8 # Originally 8.
+max_steps_per_epoch = 1 # Originally np.inf
+n_folds = 2 # Originally 8.
 img_x, img_y, n_channels = 128, 128, 3
 
 # Load file of training image names and correct labels.
@@ -116,7 +117,7 @@ for i, (i_train, i_test) in enumerate(kf):
 	# Do the fit.
 	model.fit_generator(datagen.flow(x_tr, y_tr, batch_size=batch_size),
 		validation_data=(x_val, y_val), callbacks=[earlystop],
-		steps_per_epoch=steps_per_epoch,
+		steps_per_epoch=min(max_steps_per_epoch, len(train_imgs) / batch_size),
 		epochs=epochs,
 		verbose=2)
 
@@ -134,6 +135,6 @@ print('Mean train loss: ' + str(np.mean(train_losses)))
 print('Mean test loss: ' + str(np.mean(test_losses)))
 # Save submission file.
 test_set['invasive'] = preds_test
-submission_file = '../submit.csv'
+submission_file = '../submit' + datetime_for_filename() + '.csv'
 test_set.to_csv(submission_file, index=None)
 print("Saved submission file to ", submission_file)
