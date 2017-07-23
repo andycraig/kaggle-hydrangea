@@ -3,6 +3,7 @@
 # Heavily based on code by Finlay Liu, from:
 # https://www.kaggle.com/finlay/naive-bagging-cnn-pb0-985?scriptVersionId=1187890
 
+from utils import load_from_pickle_if_possible
 from utils import datetime_for_filename
 from model import get_model
 from PIL import Image
@@ -46,32 +47,11 @@ def load_img_matrix(n_imgs, folder_name, names_and_labels):
 
 # Load train images from pickle if possible.
 print("Loading train images...")
-train_pkl = '../data/train/train.pickle'
-try:
-	print('Trying to load from pickle...')
-	with open(train_pkl, 'rb') as f:
-		train_imgs = pickle.load(f)
-	print('Loaded from pickle.')
-except FileNotFoundError as e:
-	print('Pickle not found. Loading original images...')
-	train_imgs = load_img_matrix(n_train, 'train', train_set)
-	with open(train_pkl, 'wb') as f:
-		pickle.dump(train_imgs, f)
-	print('Saved as pickle.')
-# Load test images from pickle if possible.
+train_imgs = load_from_pickle_if_possible('../data/train/train.pickle',
+					lambda : load_img_matrix(n_train, 'train', train_set))
 print("Loading test images...")
-test_pkl = '../data/test/test.pickle'
-try:
-	print('Trying to load from pickle...')
-	with open(test_pkl, 'rb') as f:
-		test_imgs = pickle.load(f)
-	print('Loaded from pickle.')
-except FileNotFoundError as e:
-	print('Pickle not found. Loading original images...')
-	test_imgs = load_img_matrix(n_test, 'test', test_set)
-	with open(test_pkl, 'wb') as f:
-		pickle.dump(test_imgs, f)
-	print('Saved as pickle.')
+train_imgs = load_from_pickle_if_possible('../data/test/test.pickle',
+					lambda : load_img_matrix(n_test, 'test', test_set))
 
 print(train_imgs.shape)
 train_labels = np.array(train_set['invasive'].iloc[:])
