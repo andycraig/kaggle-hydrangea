@@ -1,24 +1,17 @@
 #!/usr/bin/env python3
 
-# Heavily based on code by Finlay Liu, from:
-# https://www.kaggle.com/finlay/naive-bagging-cnn-pb0-985?scriptVersionId=1187890
-
 from utils import load_from_pickle_if_possible
 from utils import datetime_for_filename
-from model import get_model
 from PIL import Image
 #import tqdm
 import sklearn
 import pandas as pd
 import numpy as np
 import pickle
-from tensorflow.contrib import keras
 from sklearn import cross_validation
+from sklearn import svm
 
 max_n_imgs = np.inf # np.inf to use all data.
-epochs = 1000 # Originally 1000.
-batch_size = 64 # Originally 64.
-max_steps_per_epoch = np.inf # Originally np.inf
 n_folds = 8 # Originally 8.
 img_x, img_y, n_channels = 128, 128, 3
 
@@ -37,20 +30,20 @@ test_set = test_set.iloc[:n_test]
 # Load the train and test images.
 # Helper function.
 def load_img_matrix(n_imgs, folder_name, names_and_labels):
-	imgs_matrix = np.zeros([n_imgs, img_x, img_y, n_channels])
+	imgs_matrix = np.zeros([n_imgs, img_x * img_y * n_channels])
 	for i, img_name in enumerate(names_and_labels['name'].iloc[:]):
 		img_src = '../data/' + folder_name + '/img/' + str(img_name) + '.jpg'
 		img = Image.open(img_src).resize((img_x, img_y)) # was 128x128
 		# Resize and change pixel range from 0-255 to 0-1.
-		imgs_matrix[i,:,:,:] = np.array(img.getdata()).reshape([img_x, img_y, n_channels]) / 255
+		imgs_matrix[i,:] = np.array(img.getdata()).reshape([img_x * img_y * n_channels]) / 255
 	return imgs_matrix
 
 # Load train images from pickle if possible.
 print("Loading train images...")
-train_imgs = load_from_pickle_if_possible('../data/train/train_nn.pickle',
+train_imgs = load_from_pickle_if_possible('../data/train/train_svm.pickle',
 					lambda : load_img_matrix(n_train, 'train', train_set))
 print("Loading test images...")
-test_imgs = load_from_pickle_if_possible('../data/test/test_nn.pickle',
+test_imgs = load_from_pickle_if_possible('../data/test/test_svm.pickle',
 					lambda : load_img_matrix(n_test, 'test', test_set))
 
 train_labels = np.array(train_set['invasive'].iloc[:])
@@ -71,38 +64,21 @@ for i, (i_train, i_test) in enumerate(kf):
 	#i_train = i_train_list_of_array[0]
 	#i_test = i_test_list_of_array[0]
 	# Get the train/validation elements for this split.
-	x_tr = train_imgs[i_train,:,:,:]
+	x_tr = train_imgs[i_train,:]
 	y_tr = train_labels[i_train]
-	x_val = train_imgs[i_test,:,:,:]
+	x_val = train_imgs[i_test,:]
 	y_val = train_labels[i_test]
-	datagen = keras.preprocessing.image.ImageDataGenerator(
-        # featurewise_center = True,
-        rotation_range = 30,
-        width_shift_range = 0.2,
-        height_shift_range = 0.2,
-        # zca_whitening = True,
-        shear_range = 0.2,
-        zoom_range = 0.2,
-        horizontal_flip = True,
-        vertical_flip = True,
-        fill_mode = 'nearest')
-	datagen.fit(x_tr)
 
-	model = get_model()
-	earlystop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=15, verbose=0, mode='auto')
-	# Do the fit.
-	model.fit_generator(datagen.flow(x_tr, y_tr, batch_size=batch_size),
-		validation_data=(x_val, y_val), callbacks=[earlystop],
-		steps_per_epoch=min(max_steps_per_epoch, len(train_imgs) / batch_size),
-		epochs=epochs,
-		verbose=2)
+	# Train the SVM.
+	model = svm.SVC()
+	model.fit(x_tr, y_tr)
 
 	# Add the losses for this fold.
-	train_losses.append(eval_fun(y_tr, model.predict(x_tr)[:,0]))
-	test_losses.append(eval_fun(y_val, model.predict(x_val)[:,0]))
+	train_losses.append(eval_fun(y_tr, model.predict(x_tr)))
+	test_losses.append(eval_fun(y_val, model.predict(x_val)))
 
 	# Add the prediction contribution from this fold.
-	preds_test += model.predict(test_imgs)[:,0] / n_folds
+	preds_test += model.predict(test_imgs) / n_folds
 
 	print(str(i) + ': Train: ' + str(train_losses[-1]) + ' Val: ' + str(test_losses[-1]))
 
@@ -111,6 +87,6 @@ print('Mean train loss: ' + str(np.mean(train_losses)))
 print('Mean test loss: ' + str(np.mean(test_losses)))
 # Save submission file.
 test_set['invasive'] = preds_test
-submission_file = '../submit_nn_' + datetime_for_filename() + '.csv'
+submission_file = '../submit_svm_' + datetime_for_filename() + '.csv'
 test_set.to_csv(submission_file, index=None)
 print("Saved submission file to ", submission_file)

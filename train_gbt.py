@@ -7,7 +7,7 @@
 from PIL import Image, ImageStat
 #from tqdm import tqdm
 from sklearn import cross_validation
-import xgboost as xgb
+#import xgboost as xgb
 import pandas as pd
 import numpy as np
 import glob
@@ -18,6 +18,8 @@ import datetime
 import os
 #import warnings
 #warnings.filterwarnings('ignore')
+
+n_folds = 8
 
 random.seed(4)
 np.random.seed(4)
@@ -69,18 +71,30 @@ print('Loading Train Data')
 in_path = '../data/'
 train = pd.read_csv(in_path + 'train/train_labels.csv')
 train['path'] = train['name'].map(lambda x: in_path + 'train/img/' + str(x) + '.jpg')
-xtrain = load_img(train['path']); print('train...')
-pd.DataFrame.from_dict(xtrain).to_csv('xtrain1.csv', index=False)
-xtrain = pd.read_csv('xtrain1.csv')
+train_csv = '../data/train/xtrain1.csv'
+try:
+	print("Trying to load existing features file...")
+	xtrain = pd.read_csv(train_csv)
+	print("Done.")
+except FileNotFoundError as e:
+	print("Could not find. Loading images and calculating features...")
+	xtrain = load_img(train['path']); print('train...')
+	pd.DataFrame.from_dict(xtrain).to_csv(train_csv, index=False)
+	xtrain = pd.read_csv(train_csv)
 n_train = len(xtrain)
 
 print('Loading Test Data')
 test_jpg = glob.glob(in_path + 'test/img/*.jpg')
 test = pd.DataFrame([[p.split('/')[3].replace('.jpg',''),p] for p in test_jpg])
 test.columns = ['name','path']
-xtest = load_img(test['path']); print('test...')
-pd.DataFrame.from_dict(xtest).to_csv('xtest1.csv', index=False)
-xtest = pd.read_csv('xtest1.csv')
+test_csv = '../data/test/xtest1.csv'
+try:
+	xtest = pd.read_csv(test_csv)
+except FileNotFoundError as e:
+	print("Trying to load existing features file...")
+	xtest = load_img(test['path']); print('test...')
+	pd.DataFrame.from_dict(xtest).to_csv(test_csv, index=False)
+xtest = pd.read_csv(test_csv)
 
 xtrain = xtrain.values
 xtest = xtest.values
@@ -91,7 +105,6 @@ xgb_test = pd.DataFrame(test[['name']], columns=['name'])
 y_pred = np.zeros(xtest.shape[0])
 xgtest = xgb.DMatrix(xtest)
 score = 0
-folds = 3 #10
 kf = cross_validation.KFold(n_train, n_folds=n_folds, shuffle=False)
 
 print('Training and making predictions')
@@ -124,14 +137,13 @@ for i, (trn_index, val_index) in enumerate(kf):
     model = xgb.train(list(params.items()), xgtrain, 5000, watchlist,
                       early_stopping_rounds=25, verbose_eval = 50)
 
-    y_pred += model.predict(xgtest,ntree_limit=model.best_ntree_limit)
-    score += model.best_score
+    y_pred += model.predict(xgtest,ntree_limit=model.best_ntree_limit) / n_folds
+    score += model.best_score / n_folds
 
-y_pred /= folds
-score /= folds
 print('Mean AUC:',score)
 
 now = datetime.datetime.now()
 xgb_test['invasive'] = y_pred
-xgb_test[['name','invasive']].to_csv('sub_xgb_'+str(now.strftime("%Y-%m-%d-%H-%M"))+'_'+
-                                     str(round(score,5))+'.csv', index=False)
+submission_file = '../submit_svm_' + datetime_for_filename() + '.csv'
+xgb_test[['name','invasive']].to_csv(submission_file, index=None)
+print("Saved submission file to ", submission_file)
