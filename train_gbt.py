@@ -8,7 +8,8 @@ from sklearn import model_selection
 import xgboost as xgb
 import pandas as pd
 import numpy as np
-import glob, cv2
+import glob
+#import cv2
 import scipy
 import random
 import datetime
@@ -36,21 +37,21 @@ def get_features(path):
         ft += [scipy.stats.skew(img[:,:,0].ravel())]
         ft += [scipy.stats.skew(img[:,:,1].ravel())]
         ft += [scipy.stats.skew(img[:,:,2].ravel())]
-        bw = cv2.equalizeHist(cv2.cvtColor(img, cv2.COLOR_RGB2GRAY))
-        ft += list(cv2.HuMoments(cv2.moments(bw)).flatten())
-        ft += list(cv2.calcHist([bw],[0],None,[64],[0,256]).flatten()) #bw
-        ft += list(cv2.calcHist([img],[0],None,[64],[0,256]).flatten()) #r
-        ft += list(cv2.calcHist([img],[1],None,[64],[0,256]).flatten()) #g
-        ft += list(cv2.calcHist([img],[2],None,[64],[0,256]).flatten()) #b
-        m, s = cv2.meanStdDev(img) #mean and standard deviation
-        ft += list(m.ravel())
-        ft += list(s.ravel())
-        ft += [cv2.Laplacian(bw, cv2.CV_64F).var()]
-        ft += [cv2.Laplacian(img, cv2.CV_64F).var()]
-        ft += [cv2.Sobel(bw,cv2.CV_64F,1,0,ksize=5).var()]
-        ft += [cv2.Sobel(bw,cv2.CV_64F,0,1,ksize=5).var()]
-        ft += [cv2.Sobel(img,cv2.CV_64F,1,0,ksize=5).var()]
-        ft += [cv2.Sobel(img,cv2.CV_64F,0,1,ksize=5).var()]
+        # bw = cv2.equalizeHist(cv2.cvtColor(img, cv2.COLOR_RGB2GRAY))
+        # ft += list(cv2.HuMoments(cv2.moments(bw)).flatten())
+        # ft += list(cv2.calcHist([bw],[0],None,[64],[0,256]).flatten()) #bw
+        # ft += list(cv2.calcHist([img],[0],None,[64],[0,256]).flatten()) #r
+        # ft += list(cv2.calcHist([img],[1],None,[64],[0,256]).flatten()) #g
+        # ft += list(cv2.calcHist([img],[2],None,[64],[0,256]).flatten()) #b
+        # m, s = cv2.meanStdDev(img) #mean and standard deviation
+        # ft += list(m.ravel())
+        # ft += list(s.ravel())
+        # ft += [cv2.Laplacian(bw, cv2.CV_64F).var()]
+        # ft += [cv2.Laplacian(img, cv2.CV_64F).var()]
+        # ft += [cv2.Sobel(bw,cv2.CV_64F,1,0,ksize=5).var()]
+        # ft += [cv2.Sobel(bw,cv2.CV_64F,0,1,ksize=5).var()]
+        # ft += [cv2.Sobel(img,cv2.CV_64F,1,0,ksize=5).var()]
+        # ft += [cv2.Sobel(img,cv2.CV_64F,0,1,ksize=5).var()]
     except:
         print(path)
     return ft
