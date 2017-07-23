@@ -1,10 +1,12 @@
+#!/usr/bin/env python3
+
 # -*- coding: utf-8 -*-
 # Based on
 # https://www.kaggle.com/the1owl/fractals-of-nature-blend-0-90050
 
 from PIL import Image, ImageStat
 #from tqdm import tqdm
-from sklearn import model_selection
+from sklearn import cross_validation
 import xgboost as xgb
 import pandas as pd
 import numpy as np
@@ -14,8 +16,8 @@ import scipy
 import random
 import datetime
 import os
-import warnings
-warnings.filterwarnings('ignore')
+#import warnings
+#warnings.filterwarnings('ignore')
 
 random.seed(4)
 np.random.seed(4)
@@ -70,6 +72,7 @@ train['path'] = train['name'].map(lambda x: in_path + 'train/img/' + str(x) + '.
 xtrain = load_img(train['path']); print('train...')
 pd.DataFrame.from_dict(xtrain).to_csv('xtrain1.csv', index=False)
 xtrain = pd.read_csv('xtrain1.csv')
+n_train = len(xtrain)
 
 print('Loading Test Data')
 test_jpg = glob.glob(in_path + 'test/img/*.jpg')
@@ -89,10 +92,10 @@ y_pred = np.zeros(xtest.shape[0])
 xgtest = xgb.DMatrix(xtest)
 score = 0
 folds = 3 #10
-kf = model_selection.StratifiedKFold(n_splits=folds, shuffle=False, random_state=4)
+kf = cross_validation.KFold(n_train, n_folds=n_folds, shuffle=False)
 
 print('Training and making predictions')
-for trn_index, val_index in kf.split(xtrain, y):
+for i, (trn_index, val_index) in enumerate(kf):
 
     xgtrain = xgb.DMatrix(xtrain[trn_index], label=y[trn_index])
     xgvalid = xgb.DMatrix(xtrain[val_index], label=y[val_index])
