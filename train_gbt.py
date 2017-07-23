@@ -58,7 +58,7 @@ def get_features(path):
 
 def load_img(paths):
     imf_d = {}
-    for f in tqdm(paths, miniters=30):
+    for f in paths:
         imf_d[f] = get_features(f)
     fdata = [imf_d[f] for f in paths]
     return fdata
