@@ -15,10 +15,10 @@ from tensorflow.contrib import keras
 from sklearn import cross_validation
 
 max_n_imgs = np.inf # np.inf to use all data.
-epochs = 1 # Originally 1000.
-batch_size = 1 # Originally 64.
-max_steps_per_epoch = 1 # Originally np.inf
-n_folds = 2 # Originally 8.
+epochs = 1000 # Originally 1000.
+batch_size = 64 # Originally 64.
+max_steps_per_epoch = np.inf # Originally np.inf
+n_folds = 8 # Originally 8.
 img_x, img_y, n_channels = 128, 128, 3
 
 # Load file of training image names and correct labels.
