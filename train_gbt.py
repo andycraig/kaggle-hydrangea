@@ -43,6 +43,12 @@ def get_features(path):
         ft += [scipy.stats.skew(img[:,:,2].ravel())]
         # bw = cv2.equalizeHist(cv2.cvtColor(img, cv2.COLOR_RGB2GRAY))
         # ft += list(cv2.HuMoments(cv2.moments(bw)).flatten())
+
+		# Histograms:
+		# m.histogram() # This might be the bands concatenated.
+		# Get the bands:
+		#im.split() ⇒ sequence
+		#Returns a tuple of individual image bands from an image. For example, splitting an “RGB” image creates three new images each containing a copy of one of the original bands (red, green, blue).
         # ft += list(cv2.calcHist([bw],[0],None,[64],[0,256]).flatten()) #bw
         # ft += list(cv2.calcHist([img],[0],None,[64],[0,256]).flatten()) #r
         # ft += list(cv2.calcHist([img],[1],None,[64],[0,256]).flatten()) #g
@@ -50,8 +56,16 @@ def get_features(path):
         # m, s = cv2.meanStdDev(img) #mean and standard deviation
         # ft += list(m.ravel())
         # ft += list(s.ravel())
+
+		#Laplacian:
+		#scipy.ndimage.filters.laplace¶
         # ft += [cv2.Laplacian(bw, cv2.CV_64F).var()]
         # ft += [cv2.Laplacian(img, cv2.CV_64F).var()]
+
+        # Sobel:
+        #image = Image.open('your_image.png')
+        #image = image.filter(ImageFilter.FIND_EDGES)
+
         # ft += [cv2.Sobel(bw,cv2.CV_64F,1,0,ksize=5).var()]
         # ft += [cv2.Sobel(bw,cv2.CV_64F,0,1,ksize=5).var()]
         # ft += [cv2.Sobel(img,cv2.CV_64F,1,0,ksize=5).var()]
