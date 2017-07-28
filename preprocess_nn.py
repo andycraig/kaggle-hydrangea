@@ -8,7 +8,8 @@ import numpy as np
 img_x, img_y, n_channels = 128, 128, 3
 
 def main(config_file):
-	config = yaml.load(config_file)
+	with open(config_file, 'r') as f:
+		config = yaml.load(f)
 
 	# Load file of training image names and correct labels.
 	train_set = pd.read_csv(config['train_set'])

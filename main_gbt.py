@@ -23,7 +23,8 @@ import sys
 #warnings.filterwarnings('ignore')
 
 def main(config_file):
-	config = yaml.load(config_file)
+	with open(config_file, 'r') as f:
+		config = yaml.load(f)
 
 	# Load file of training image names and correct labels.
 	train_set = pd.read_csv(config['test_set'])

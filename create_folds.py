@@ -7,7 +7,8 @@ import yaml
 import sys
 
 def main(config_file):
-	config = yaml.load(config_file)
+	with open(config_file, 'r') as f:
+		config = yaml.load(f)
 
 	# Set seed.
 	random.seed(4)
