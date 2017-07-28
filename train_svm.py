@@ -10,6 +10,8 @@ import numpy as np
 import pickle
 from sklearn import cross_validation
 from sklearn import svm
+import yaml
+import sys
 
 max_n_imgs = np.inf # np.inf to use all data.
 n_folds = 8 # Originally 8.

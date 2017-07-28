@@ -2,18 +2,20 @@
 
 from PIL import Image
 import yaml
+import sys
 
-config = yaml.load('config.yaml')
+def main(config_file):
+	config = yaml.load(config_file)
 
-# Preprocess GBT features.
-print("Preprocessing GBT training set features...")
-train_features_gbt = preprocess_gbt('train', train_set)
-train_features_gbt.to_csv(config['train_features_gbt'])
-print("Done.")
-print("Preprocessing GBT test set features...")
-test_features_gbt = preprocess_gbt('test', test_set)
-test_features_gbt.to_csv(config['test_features_gbt'])
-print("Done.")
+	# Preprocess GBT features.
+	print("Preprocessing GBT training set features...")
+	train_features_gbt = preprocess_gbt('train', train_set)
+	train_features_gbt.to_csv(config['train_features_gbt'])
+	print("Done.")
+	print("Preprocessing GBT test set features...")
+	test_features_gbt = preprocess_gbt('test', test_set)
+	test_features_gbt.to_csv(config['test_features_gbt'])
+	print("Done.")
 
 def get_features(path):
     try:
@@ -71,3 +73,6 @@ def preprocess_gbt(folder_name, names_and_labels):
 		img_src = '../data/' + folder_name + '/img/' + str(img_name) + '.jpg'
 	    imf_d[img_name] = get_features(img_src)
 	return imf_d
+
+if __name__ == "__main__":
+	main(sys.argv[1])

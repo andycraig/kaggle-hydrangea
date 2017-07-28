@@ -18,32 +18,37 @@ import random
 import datetime
 import os
 import yaml
+import sys
 #import warnings
 #warnings.filterwarnings('ignore')
 
-config = yaml.load('config.yaml')
+def main(config_file):
+	config = yaml.load(config_file)
 
-# Load file of training image names and correct labels.
-train_set = pd.read_csv(config['test_set'])
-# Load file of test image names and dummy labels.
-test_set = pd.read_csv(config['train_set'])
+	# Load file of training image names and correct labels.
+	train_set = pd.read_csv(config['test_set'])
+	# Load file of test image names and dummy labels.
+	test_set = pd.read_csv(config['train_set'])
 
-print('Loading training data features...')
-train_features = pd.read_csv(config['train_features_gbt'])
-print("Done.")
-print('Loading test data features...')
-test_features = pd.read_csv(config['test_features_gbt']).values
-print('Done.')
+	print('Loading training data features...')
+	train_features = pd.read_csv(config['train_features_gbt'])
+	print("Done.")
+	print('Loading test data features...')
+	test_features = pd.read_csv(config['test_features_gbt']).values
+	print('Done.')
 
-y = train_set['invasive'].values
+	y = train_set['invasive'].values
 
-print('xgb fitting ...')
-y_pred, score = train_gbt(train_features=train_features, test_features=test_features, train_labels=y)
+	print('xgb fitting ...')
+	y_pred, score = train_gbt(train_features=train_features, test_features=test_features, train_labels=y)
 
-print('Mean AUC:',score)
+	print('Mean AUC:',score)
 
-now = datetime.datetime.now()
-xgb_test['invasive'] = y_pred
-submission_file = '../submit_svm_' + datetime_for_filename() + '.csv'
-xgb_test[['name','invasive']].to_csv(submission_file, index=None)
-print("Saved submission file to ", submission_file)
+	now = datetime.datetime.now()
+	xgb_test['invasive'] = y_pred
+	submission_file = '../submit_svm_' + datetime_for_filename() + '.csv'
+	xgb_test[['name','invasive']].to_csv(submission_file, index=None)
+	print("Saved submission file to ", submission_file)
+
+if __name__ == "__main__":
+	main(sys.argv[1])
