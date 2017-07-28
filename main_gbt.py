@@ -17,19 +17,22 @@ import scipy
 import random
 import datetime
 import os
+import yaml
 #import warnings
 #warnings.filterwarnings('ignore')
 
+config = yaml.load('config.yaml')
+
 # Load file of training image names and correct labels.
-train_set = pd.read_csv('../data/train/train_labels.csv')
+train_set = pd.read_csv(config['test_set'])
 # Load file of test image names and dummy labels.
-test_set = pd.read_csv('../sample_submission.csv')
+test_set = pd.read_csv(config['train_set'])
 
 print('Loading training data features...')
-train_features = pd.read_csv('../data/train/train_features.csv')
+train_features = pd.read_csv(config['train_features_gbt'])
 print("Done.")
 print('Loading test data features...')
-test_features = pd.read_csv('../data/test/test_features.csv').values
+test_features = pd.read_csv(config['test_features_gbt']).values
 print('Done.')
 
 y = train_set['invasive'].values

@@ -3,13 +3,14 @@
 import pandas as pd
 import random
 import numpy as np
+import config
 
 # Set seed.
 random.seed(4)
 np.random.seed(4)
 
 # Load training CSV.
-df = pd.read_csv('../data/train/train_labels.csv.bak')
+df = pd.read_csv(config['train_set_clean'])
 n_train = len(df)
 
 # Generate folds.
@@ -20,4 +21,4 @@ permuted_fold_ids = np.random.permutation(unpermuted_fold_ids)
 
 # Write folds into CSV.
 df['fold'] = permuted_fold_ids
-df.to_csv('../data/train/train_labels.csv', index=False)
+df.to_csv(config['train_set'], index=False)

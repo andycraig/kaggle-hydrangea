@@ -1,29 +1,32 @@
 import pickle
 from PIL import Image
+import yaml
+
+config = yaml.load('config.yaml')
 
 # Load file of training image names and correct labels.
-train_set = pd.read_csv('../data/train/train_labels.csv')
+train_set = pd.read_csv(config['train_set'])
 # Load file of test image names and dummy labels.
-test_set = pd.read_csv('../sample_submission.csv')
+test_set = pd.read_csv(config['test_set'])
 
 # Preprocess NN features.
 print("Preprocessing NN training set features...")
 train_features_nn = preprocess_nn('train', train_set)
-pickle.dump( train_features_nn, open( '../data/train/train_nn.pickle', "wb" ) )
+pickle.dump( train_features_nn, open( config['train_features_nn'], "wb" ) )
 print("Done.")
 print("Preprocessing NN test set features...")
 test_features_nn = preprocess_nn('test', test_set)
-pickle.dump( test_features_nn, open( '../data/test/test_nn.pickle', "wb" ) )
+pickle.dump( test_features_nn, open( config['test_features_nn'], "wb" ) )
 print("Done.")
 
 # Preprocess GBT features.
 print("Preprocessing GBT training set features...")
 train_features_gbt = preprocess_gbt('train', train_set)
-train_features_gbt.to_csv()'../data/train/train_features.csv')
+train_features_gbt.to_csv(config['train_features_gbt'])
 print("Done.")
 print("Preprocessing GBT test set features...")
 test_features_gbt = preprocess_gbt('test', test_set)
-test_features_gbt.to_csv()'../data/test/test_features.csv')
+test_features_gbt.to_csv(config['test_features_gbt'])
 print("Done.")
 
 def get_features(path):

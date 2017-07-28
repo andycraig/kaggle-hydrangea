@@ -5,17 +5,21 @@ from utils import datetime_for_filename
 import pandas as pd
 import numpy as np
 import pickle
+import yaml
+
+config = yaml.load('config.yaml')
+
 
 # Load file of training image names and correct labels.
-train_set = pd.read_csv('../data/train/train_labels.csv')
+train_set = pd.read_csv(config['train_set'])
 # Load file of test image names and dummy labels.
-test_set = pd.read_csv('../sample_submission.csv')
+test_set = pd.read_csv(config['test_set'])
 
 print("Loading train images...")
-with open('../data/train/train_nn.pickle', 'rb') as f:
+with open(config['train_features_nn'], 'rb') as f:
 	train_imgs = pickle.load(f)
 print("Loading test images...")
-with open('../data/test/test_nn.pickle', 'rb') as f:
+with open(config['test_features_nn'], 'rb') as f:
 	test_imgs = pickle.load(f)
 
 train_labels = np.array(train_set['invasive'])
