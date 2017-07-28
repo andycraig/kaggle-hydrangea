@@ -1,8 +1,8 @@
 train_set_clean: ../dummydata/train/train_labels.csv.bak
 train_set: ../dummydata/train/train_labels.csv
 test_set: ../dummydata/sample_submission.csv
-train_imgs: ../dummydata/train/img
-test_imgs: ../dummydata/test/img
+train_imgs: ../dummydata/train/img/
+test_imgs: ../dummydata/test/img/
 train_features_nn: ../dummydata/train/train_nn.pickle
 test_features_nn: ../dummydata/test/test_nn.pickle
 train_features_gbt: ../dummydata/train/train_features.csv
