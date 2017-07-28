@@ -1,6 +1,30 @@
-import datetime
 import pickle
 from PIL import Image
+
+# Load file of training image names and correct labels.
+train_set = pd.read_csv('../data/train/train_labels.csv')
+# Load file of test image names and dummy labels.
+test_set = pd.read_csv('../sample_submission.csv')
+
+# Preprocess NN features.
+print("Preprocessing NN training set features...")
+train_features_nn = preprocess_nn('train', train_set)
+pickle.dump( train_features_nn, open( '../data/train/train_nn.pickle', "wb" ) )
+print("Done.")
+print("Preprocessing NN test set features...")
+test_features_nn = preprocess_nn('test', test_set)
+pickle.dump( test_features_nn, open( '../data/test/test_nn.pickle', "wb" ) )
+print("Done.")
+
+# Preprocess GBT features.
+print("Preprocessing GBT training set features...")
+train_features_gbt = preprocess_gbt('train', train_set)
+train_features_gbt.to_csv()'../data/train/train_features.csv')
+print("Done.")
+print("Preprocessing GBT test set features...")
+test_features_gbt = preprocess_gbt('test', test_set)
+test_features_gbt.to_csv()'../data/test/test_features.csv')
+print("Done.")
 
 def get_features(path):
     try:
@@ -52,12 +76,12 @@ def get_features(path):
         print(path)
     return ft
 
-def preprocess_gbt(paths):
-    imf_d = {}
-    for f in paths:
-        imf_d[f] = get_features(f)
-    fdata = [imf_d[f] for f in paths]
-    return fdata
+def preprocess_gbt(folder_name, names_and_labels):
+	imf_d = {}
+    for i, img_name in enumerate(names_and_labels['name'].iloc[:]):
+		img_src = '../data/' + folder_name + '/img/' + str(img_name) + '.jpg'
+	    imf_d[img_name] = get_features(img_src)
+	return imf_d
 
 # Load the train and test images.
 # Helper function.
@@ -70,22 +94,3 @@ def preprocess_nn(folder_name, names_and_labels):
 		# Resize and change pixel range from 0-255 to 0-1.
 		imgs_matrix[i,:,:,:] = np.array(img.getdata()).reshape([img_x, img_y, n_channels]) / 255
 	return imgs_matrix
-
-filesafe_replacements = str.maketrans(" :", "_-")
-
-def datetime_for_filename():
-    return str(datetime.datetime.now()).translate(filesafe_replacements)
-
-def load_from_pickle_if_possible(pkl, alt_load_fn):
-    try:
-        print('Trying to load from pickle...')
-        with open(pkl, 'rb') as f:
-            data = pickle.load(f)
-        print('Loaded from pickle.')
-    except FileNotFoundError as e:
-        print('Pickle not found. Loading original images...')
-        data = alt_load_fn()
-        with open(pkl, 'wb') as f:
-            pickle.dump(data, f)
-        print('Saved as pickle.')
-    return data
