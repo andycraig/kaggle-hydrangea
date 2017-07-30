@@ -1,3 +1,5 @@
 script.py
 notes.txt
 __pycache__
+dummy_hyperparams.yaml
+hyperparams.yaml
