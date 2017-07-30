@@ -6,12 +6,15 @@ from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
 from sklearn.metrics import euclidean_distances
 import sklearn
-import xgboost as xgb
 from model_nn import get_model
 import pandas as pd
 import numpy as np
 from tensorflow.contrib import keras
 from sklearn import cross_validation
+try:
+	import xgboost as xgb
+except ImportError as e:
+	print("Couldn't find module xgboost. Won't be able to use xgboost.")
 
 # Test classifier
 class TestClassifier(BaseEstimator, ClassifierMixin):
@@ -19,7 +22,7 @@ class TestClassifier(BaseEstimator, ClassifierMixin):
 	def __init__(self, demo_param='demo'):
 		self.demo_param = demo_param
 
-	 def fit(self, X, y):
+	def fit(self, X, y):
 
 		# Check that X and y have correct shape
 		X, y = check_X_y(X, y)
@@ -31,7 +34,7 @@ class TestClassifier(BaseEstimator, ClassifierMixin):
 		 # Return the classifier
 		return self
 
-	 def predict(self, X):
+	def predict(self, X):
 
 		# Check is fit had been called
 		check_is_fitted(self, ['X_', 'y_'])
@@ -43,7 +46,7 @@ class TestClassifier(BaseEstimator, ClassifierMixin):
 		return self.y_[closest]
 
 # NN classifier
- class NN(BaseEstimator, ClassifierMixin):
+class NN(BaseEstimator, ClassifierMixin):
 
 	def __init__(self, demo_param='demo'):
 		self.demo_param = demo_param
@@ -80,7 +83,7 @@ class TestClassifier(BaseEstimator, ClassifierMixin):
 		# Return the classifier
 		return self
 
-	  def predict(self, X):
+	def predict(self, X):
 
 		# Check is fit had been called
 		check_is_fitted(self, ['X_', 'y_'])
@@ -97,7 +100,7 @@ class XGBoost(BaseEstimator, ClassifierMixin):
 	def __init__(self, demo_param='demo'):
 		self.demo_param = demo_param
 
-	 def fit(self, X, y):
+	def fit(self, X, y):
 
 		# Check that X and y have correct shape
 		X, y = check_X_y(X, y)
@@ -135,7 +138,7 @@ class XGBoost(BaseEstimator, ClassifierMixin):
 
 		return self
 
-	 def predict(self, X):
+	def predict(self, X):
 
 		# Check is fit had been called
 		check_is_fitted(self, ['X_', 'y_'])

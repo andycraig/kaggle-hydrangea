@@ -7,3 +7,4 @@ train_features_nn: ../data/train/train_nn.pickle
 test_features_nn: ../data/test/test_nn.pickle
 train_features_gbt: ../data/train/train_features.csv
 test_features_gbt: ../data/test/test_features.csv
+submit_prefix: ../submit
