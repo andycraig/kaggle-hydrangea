@@ -54,9 +54,15 @@ def main(config_file, i_model):
 		test_features = pd.read_csv(config['test_features_gbt'], header=None)
 
 	print('Fitting...')
-	model.fit(X=train_features, y=train_labels)
+	n_estimators = 8
+	max_samples = 1.0 * (n_estimators - 1) / n_estimators
+	clf = BaggingClassifier(model,
+							n_estimators=n_estimators,
+							max_samples=max_samples,
+							max_features=1)
+	clf.fit(X=train_features, y=train_labels)
 	print('Predicting...')
-	y_pred = model.predict(test_features)
+	y_pred = clf.predict(test_features)
 
 	now = datetime.datetime.now()
 	test_set['invasive'] = y_pred
