@@ -3,10 +3,11 @@
 python create_folds.py dummy.yaml
 python preprocess_nn.py dummy.yaml
 python preprocess_gbt.py dummy.yaml
+# SVM uses GBT features.
 
-python main_nn.py dummy.yaml
-python main_gbt.py dummy.yaml
-python train_svn.py dummy.yaml
+python main.py dummy.yaml 0 # NN
+python main.py dummy.yaml 1 # xgboost
+python main.py dummy.yaml 2 # SVM
 
 python stack.py config.yaml
 
