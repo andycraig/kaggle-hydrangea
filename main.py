@@ -22,7 +22,7 @@ from estimators import NN, XGBoost, TestClassifier
 #import warnings
 #warnings.filterwarnings('ignore')
 
-def main(config_file, i_model):
+def main(config_file, i_model, fold):
 	with open(config_file, 'r') as f:
 		config = yaml.load(f)
 	with open(config_file['hyperparams_file'], 'r') as f:
@@ -54,6 +54,13 @@ def main(config_file, i_model):
 		train_features = pd.read_csv(config['train_features_gbt'], header=None)
 		test_features = pd.read_csv(config['test_features_gbt'], header=None)
 
+
+	if fold != None:
+		mask_fold_train = train_set['fold'] == fold
+		mask_fold_val = not mask_fold_train
+	else:
+		mask_fold_train = np.ones([len(train_labels), 1], dtype=bool)
+
 	print('Fitting...')
 	n_estimators = 8
 	max_samples = 1.0 * (n_estimators - 1) / n_estimators
@@ -61,10 +68,16 @@ def main(config_file, i_model):
 							n_estimators=n_estimators,
 							max_samples=max_samples,
 							max_features=1)
-	clf.fit(X=train_features, y=train_labels)
+	clf.fit(X=train_features[mask_fold_train], y=train_labels[mask_fold_train])
+
+	if fold != None:
+		model_col_name = 'M' + str(i_model)
+		train_set[model_col_name].loc[mask_fold_val] = clf.predict_proba(train_features[mask_fold_val])
+		train_set.to_csv(config['train_set'], index=False)
+		print('Added predictions for model ' + str(i_model) + ', fold ' + str(fold) + ' to column ' + model_col_name + ' of ' + config['train_set'])
+
 	print('Predicting...')
 	y_pred = clf.predict_proba(test_features)
-
 	now = datetime.datetime.now()
 	test_set['invasive'] = y_pred
 	submission_file = config['submit_prefix'] + '_' + str(i_model) + '_' + datetime_for_filename() + '.csv'
@@ -72,4 +85,7 @@ def main(config_file, i_model):
 	print("Saved submission file to ", submission_file)
 
 if __name__ == "__main__":
-	main(sys.argv[1], sys.argv[2])
+	if len(sys.argv) == 4:
+		main(sys.argv[1], sys.argv[2], fold=sys.argv[3])
+	else:
+		main(sys.argv[1], sys.argv[2], fold=None)
