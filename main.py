@@ -70,19 +70,20 @@ def main(config_file, i_model, fold):
 							max_features=1)
 	clf.fit(X=train_features[mask_fold_train], y=train_labels[mask_fold_train])
 
-	if fold != None:
-		model_col_name = 'M' + str(i_model)
-		train_set[model_col_name].loc[mask_fold_val] = clf.predict_proba(train_features[mask_fold_val])
-		train_set.to_csv(config['train_set'], index=False)
-		print('Added predictions for model ' + str(i_model) + ', fold ' + str(fold) + ' to column ' + model_col_name + ' of ' + config['train_set'])
+	model_col_name = 'M' + str(i_model)
 
-	print('Predicting...')
-	y_pred = clf.predict_proba(test_features)
-	now = datetime.datetime.now()
-	test_set['invasive'] = y_pred
-	submission_file = config['submit_prefix'] + '_' + str(i_model) + '_' + datetime_for_filename() + '.csv'
-	test_set[['name','invasive']].to_csv(submission_file, index=None)
-	print("Saved submission file to ", submission_file)
+	# If training on a fold, add predictions for this fold only to train CSV.
+	if fold != None:
+		train_set[model_col_name].loc[mask_fold_val] = clf.predict_proba(train_features[mask_fold_val])
+		train_set.to_csv(config['train_set'], index=None)
+		print('Added predictions for model ' + str(i_model) + ', fold ' + str(fold) + ' to column ' + model_col_name + ' of ' + config['train_set'])
+	else:
+		# If training on whole training set, add predictions for whole test set to test CSV.
+		print('Predicting...')
+		y_pred = clf.predict_proba(test_features)
+		test_set[model_col_name].loc[:] = y_pred
+		test_set[['name','invasive']].to_csv(config['test_set'], index=None)
+		print('Added predictions for model ' + str(i_model) + ' to column ' + model_col_name + ' of ' + config['test_set'])
 
 if __name__ == "__main__":
 	if len(sys.argv) == 4:
