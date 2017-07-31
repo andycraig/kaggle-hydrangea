@@ -4,7 +4,7 @@
 # Based on
 # https://www.kaggle.com/the1owl/fractals-of-nature-blend-0-90050
 
-from sklearn import cross_validation, svm 
+from sklearn import cross_validation, svm
 from sklearn.grid_search import GridSearchCV
 from utils import datetime_for_filename
 import pandas as pd
@@ -42,7 +42,7 @@ def main(config_file, i_model):
 	elif i_model == 2:
 		model = svm.SVC()
 		train_features = pd.read_csv(config['train_features_gbt'], header=None)
-		tuned_parameters = {'gamma': [1e-3, 1e-4], 'C': [1, 10, 100, 1000]}
+		tuned_parameters = {'gamma': [1e1, 1e0, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5], 'C': [00.1, 0.1, 1, 10, 100, 1000]}
 		category_in_hyperparams_file = 'svm'
 	else:
 		raise NotImplementedError('No hyperparams to tune for test model.')
@@ -53,16 +53,19 @@ def main(config_file, i_model):
 	print('Finding hyperparameters...')
 	clf = GridSearchCV(model, tuned_parameters, cv=5)
 	clf.fit(train_features, train_labels)
+	print('Found best hyperparams:')
+	print(clf.best_params_)
 
 	# Write chosen hyperparams to file.
 	with open(config['hyperparams_file'], 'r') as f:
 		hyperparams = yaml.load(f)
 	# Put grid search best params in hyperparams dict.
 	for key in clf.best_params_:
-		hyperparams[category_in_hyperparams_file][key] = clf.best_params[key]
+		hyperparams[category_in_hyperparams_file][key] = clf.best_params_[key]
 	# Save hyperparams.
 	with open(config['hyperparams_file'], 'w') as f:
-		yaml.write(hyperparams, f)
+		yaml.dump(hyperparams, f)
+	print('Wrote best params to ' + str(config['hyperparams_file']))
 
 if __name__ == "__main__":
 	main(sys.argv[1], int(sys.argv[2]))

@@ -9,3 +9,4 @@ train_features_gbt: ../dummydata/train/train_features.csv
 test_features_gbt: ../dummydata/test/test_features.csv
 submit_prefix: ../test_submit
 hyperparams_file: dummy_hyperparams.yaml
+n_models: 3

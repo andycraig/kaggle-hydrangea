@@ -8,6 +8,7 @@ import yaml
 import sys
 import pandas as pd
 import numpy as np
+from sklearn.preprocessing import StandardScaler
 
 def main(config_file):
 	with open(config_file, 'r') as f:
@@ -20,13 +21,18 @@ def main(config_file):
 	# Preprocess GBT features.
 
 	print("Preprocessing GBT training set features...")
-	train_features_gbt = preprocess_gbt(config['train_imgs'], train_set)
-	pd.DataFrame.from_dict(train_features_gbt, orient="index").to_csv(config['train_features_gbt'], index=False, header=False)
-	print("Done.")
+	train_features_gbt_unscaled = preprocess_gbt(config['train_imgs'], train_set)
+	print("Centering and scaling...")
+	scaler = StandardScaler().fit(train_features_gbt_unscaled)
+	train_features_gbt = pd.DataFrame(scaler.transform(train_features_gbt_unscaled))
+	train_features_gbt.to_csv(config['train_features_gbt'], index=False, header=False)
+	print("Saved training features to " + config['train_features_gbt'])
 	print("Preprocessing GBT test set features...")
-	test_features_gbt = preprocess_gbt(config['test_imgs'], test_set)
-	pd.DataFrame.from_dict(test_features_gbt, orient="index").to_csv(config['test_features_gbt'], index=False, header=False)
-	print("Done.")
+	test_features_gbt_unscaled = preprocess_gbt(config['test_imgs'], test_set)
+	print("Centering and scaling (same transformation as for train features)...")
+	test_features_gbt = pd.DataFrame(scaler.transform(test_features_gbt_unscaled))
+	test_features_gbt.to_csv(config['test_features_gbt'], index=False, header=False)
+	print("Saved test features to " + config['test_features_gbt'])
 
 def get_features(path):
 	ft = []
@@ -80,7 +86,8 @@ def preprocess_gbt(folder_name, names_and_labels):
 	for i, img_name in enumerate(names_and_labels['name'].iloc[:]):
 		img_src = folder_name + str(img_name) + '.jpg'
 		imf_d[img_name] = get_features(img_src)
-	return imf_d
+	imf_df = pd.DataFrame.from_dict(imf_d, orient="index")
+	return imf_df
 
 if __name__ == "__main__":
 	main(sys.argv[1])
