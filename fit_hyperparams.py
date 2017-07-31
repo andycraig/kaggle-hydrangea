@@ -4,7 +4,8 @@
 # Based on
 # https://www.kaggle.com/the1owl/fractals-of-nature-blend-0-90050
 
-from sklearn import cross_validation, svm, GridSearchCV
+from sklearn import cross_validation, svm 
+from sklearn.grid_search import GridSearchCV
 from utils import datetime_for_filename
 import pandas as pd
 import numpy as np
@@ -28,7 +29,6 @@ def main(config_file, i_model):
 	# Load file of training image names and correct labels.
 	train_set = pd.read_csv(config['train_set'])
 	train_labels = train_set['invasive'].values
-
 	print('Loading features...')
 	if i_model == 0:
 		raise NotImplementedError('No hyperparams to tune for NN model.')
@@ -43,7 +43,6 @@ def main(config_file, i_model):
 		model = svm.SVC()
 		train_features = pd.read_csv(config['train_features_gbt'], header=None)
 		tuned_parameters = {'gamma': [1e-3, 1e-4], 'C': [1, 10, 100, 1000]}
-		scores = ['precision', 'recall']
 		category_in_hyperparams_file = 'svm'
 	else:
 		raise NotImplementedError('No hyperparams to tune for test model.')
@@ -52,8 +51,8 @@ def main(config_file, i_model):
 		test_features = pd.read_csv(config['test_features_gbt'], header=None)
 
 	print('Finding hyperparameters...')
-	clf = GridSearchCV(SVC(C=1), tuned_parameters, cv=5, scoring='%s_macro' % score)
-	clf.fit(X_train, y_train)
+	clf = GridSearchCV(model, tuned_parameters, cv=5)
+	clf.fit(train_features, train_labels)
 
 	# Write chosen hyperparams to file.
 	with open(config['hyperparams_file'], 'r') as f:
@@ -66,4 +65,4 @@ def main(config_file, i_model):
 		yaml.write(hyperparams, f)
 
 if __name__ == "__main__":
-	main(sys.argv[1], sys.argv[2])
+	main(sys.argv[1], int(sys.argv[2]))
