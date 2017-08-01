@@ -9,6 +9,7 @@ import sys
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 
 def main(config_file):
 	with open(config_file, 'r') as f:
@@ -24,14 +25,23 @@ def main(config_file):
 	train_features_gbt_unscaled = preprocess_gbt(config['train_imgs'], train_set)
 	print("Centering and scaling...")
 	scaler = StandardScaler().fit(train_features_gbt_unscaled)
-	train_features_gbt = pd.DataFrame(scaler.transform(train_features_gbt_unscaled))
-	train_features_gbt.to_csv(config['train_features_gbt'], index=False, header=False)
+	train_features_gbt = scaler.transform(train_features_gbt_unscaled)
+	n_components = 3
+	print("Adding projections onto first " + str(n_components) + " principle components...")
+	pca = PCA(n_components)
+	# Use fit_transform here.
+	train_features_gbt = np.hstack(train_features_gbt,
+							pca.fit_transform(train_features_gbt))
+	np.savetxt(config['train_features_gbt'], train_features_gbt, delimiter=',')
 	print("Saved training features to " + config['train_features_gbt'])
 	print("Preprocessing GBT test set features...")
 	test_features_gbt_unscaled = preprocess_gbt(config['test_imgs'], test_set)
 	print("Centering and scaling (same transformation as for train features)...")
-	test_features_gbt = pd.DataFrame(scaler.transform(test_features_gbt_unscaled))
-	test_features_gbt.to_csv(config['test_features_gbt'], index=False, header=False)
+	test_features_gbt = scaler.transform(test_features_gbt_unscaled)
+	print("Adding projections onto principle components...")
+	test_features_gbt = np.hstack(test_features_gbt,
+							pca.transform(test_features_gbt))
+	np.savetxt(config['test_features_gbt'], test_features_gbt, delimiter=',')
 	print("Saved test features to " + config['test_features_gbt'])
 
 def get_features(path):
@@ -54,9 +64,11 @@ def get_features(path):
 	# ft += list(cv2.HuMoments(cv2.moments(bw)).flatten())
 
 	# Histograms:
-	# m.histogram() # This might be the bands concatenated.
+	ft += m.histogram() # All bands, concatenated.
 	# Get the bands:
 	#im.split() ⇒ sequence
+	# BW:
+	# img.convert(mode='L')
 	#Returns a tuple of individual image bands from an image. For example, splitting an “RGB” image creates three new images each containing a copy of one of the original bands (red, green, blue).
 	# ft += list(cv2.calcHist([bw],[0],None,[64],[0,256]).flatten()) #bw
 	# ft += list(cv2.calcHist([img],[0],None,[64],[0,256]).flatten()) #r
@@ -68,6 +80,7 @@ def get_features(path):
 
 	#Laplacian:
 	#scipy.ndimage.filters.laplace¶
+	# I don't think this is the same thing.
 	# ft += [cv2.Laplacian(bw, cv2.CV_64F).var()]
 	# ft += [cv2.Laplacian(img, cv2.CV_64F).var()]
 
