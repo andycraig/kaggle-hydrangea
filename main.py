@@ -60,13 +60,12 @@ def main(config_file, i_model, fold):
 		model = TestClassifier()
 		train_features = pd.read_csv(config['train_features_gbt'], header=None)
 		test_features = pd.read_csv(config['test_features_gbt'], header=None)
-	print("Loaded train features have shape: " + str(train_features.shape))
 
 	if fold != None:
-		mask_fold_train = train_set['fold'] == fold
+		mask_fold_train = np.array(train_set['fold'] == fold)
 		mask_fold_val = ~mask_fold_train
 	else:
-		mask_fold_train = np.ones([len(train_labels), 1], dtype=bool)
+		mask_fold_train = np.ones([1, len(train_labels)], dtype=bool)
 
 	print('Fitting...')
 	n_estimators = 8
@@ -75,6 +74,10 @@ def main(config_file, i_model, fold):
 							n_estimators=n_estimators,
 							max_samples=max_samples,
 							max_features=1)
+
+	print(train_features)
+	print(mask_fold_train)
+	print(train_features[mask_fold_train])
 	clf.fit(X=train_features[mask_fold_train], y=train_labels[mask_fold_train])
 
 	model_col_name = 'M' + str(i_model)

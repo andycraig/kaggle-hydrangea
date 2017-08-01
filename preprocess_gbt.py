@@ -39,6 +39,7 @@ def main(config_file):
 	print("Centering and scaling (same transformation as for train features)...")
 	test_features_gbt = scaler.transform(test_features_gbt_unscaled)
 	print("Adding projections onto principle components...")
+	# Use transform here, to use the same pinciple components from the train data.
 	test_features_gbt = np.hstack(test_features_gbt,
 							pca.transform(test_features_gbt))
 	np.savetxt(config['test_features_gbt'], test_features_gbt, delimiter=',')

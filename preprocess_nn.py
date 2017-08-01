@@ -5,7 +5,9 @@ import sys
 import pandas as pd
 import numpy as np
 
-img_x, img_y, n_channels = 128, 128, 3
+img_x = 128
+img_y = 128
+n_channels = 3
 
 def main(config_file):
 	with open(config_file, 'r') as f:
@@ -18,11 +20,18 @@ def main(config_file):
 
 	# Preprocess NN features.
 	print("Preprocessing NN training set features...")
-	train_features_nn = preprocess_nn(config['train_imgs'], train_set)
+	# Result of preprocess_nn is a 4D matrix.
+	# Reshape into a 2D matrix, which is better suited to sklearn interfaces.
+	train_features_nn_4Dmatrix = preprocess_nn(config['train_imgs'], train_set)
+	n_train = len(train_features_nn_4Dmatrix)
+	n_elem_per_img = img_x * img_y * n_channels
+	train_features_nn = train_features_nn_4Dmatrix.reshape([n_train, n_elem_per_img])
 	pickle.dump( train_features_nn, open( config['train_features_nn'], "wb" ) )
 	print("Done.")
 	print("Preprocessing NN test set features...")
-	test_features_nn = preprocess_nn(config['test_imgs'], test_set)
+	test_features_nn_4Dmatrix = preprocess_nn(config['test_imgs'], test_set)
+	n_test = len(test_features_nn_4Dmatrix)
+	test_features_nn = test_features_nn_4Dmatrix.reshape([n_test, n_elem_per_img])
 	pickle.dump( test_features_nn, open( config['test_features_nn'], "wb" ) )
 	print("Done.")
 

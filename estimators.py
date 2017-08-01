@@ -16,6 +16,10 @@ try:
 except ImportError as e:
 	print("Couldn't find module xgboost. Won't be able to use xgboost.")
 
+img_x = 128
+img_y = 128
+n_channels = 3
+
 # Test classifier
 class TestClassifier(BaseEstimator, ClassifierMixin):
 
@@ -58,6 +62,9 @@ class NN(BaseEstimator, ClassifierMixin):
 		self.classes_ = unique_labels(y)
 
 		self.X_ = X
+		# self.X_ is an n x (128*128*3) matrices.
+		# For CNN, we want an nx128x128x3 matrix.
+		self.X_4Dmatrix = self.X_.reshape([len(self.X_), img_x, img_y, n_channels])
 		self.y_ = y
 		datagen = keras.preprocessing.image.ImageDataGenerator(
 			# featurewise_center = True,
@@ -70,12 +77,12 @@ class NN(BaseEstimator, ClassifierMixin):
 			horizontal_flip = True,
 			vertical_flip = True,
 			fill_mode = 'nearest')
-		datagen.fit(self.X_)
+		datagen.fit(self.X_matrix)
 
 		self.model = get_model()
 		earlystop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=15, verbose=0, mode='auto')
 		# Do the fit.
-		self.model.fit_generator(datagen.flow(self.X_, self.y_, batch_size=batch_size),
+		self.model.fit_generator(datagen.flow(self.X_4Dmatrix, self.y_, batch_size=batch_size),
 			callbacks=[earlystop],
 			steps_per_epoch=min(max_steps_per_epoch, len(train_imgs) / batch_size),
 			epochs=epochs,
@@ -91,7 +98,8 @@ class NN(BaseEstimator, ClassifierMixin):
 		# Input validation
 		X = check_array(X)
 
-		predictions = self.model.predict(X)
+		# Convert X (list of matrices) to a matrix before sending to model.predict().
+		predictions = self.model.predict(X.reshape([len(X), img_x, img_y, n_channels]))
 		return predictions
 
 # XGBoost classifier
