@@ -56,16 +56,16 @@ class NN(BaseEstimator, ClassifierMixin):
 		self.demo_param = demo_param
 
 	def fit(self, X, y):
-		# Check that X and y have correct shape
+		# Check that X and y have correct shape.
 		X, y = check_X_y(X, y)
-		# Store the classes seen during fit
+		# Store the classes seen during fit.
 		self.classes_ = unique_labels(y)
 
 		self.X_ = X
+		self.y_ = y
 		# self.X_ is an n x (128*128*3) matrices.
 		# For CNN, we want an nx128x128x3 matrix.
-		self.X_4Dmatrix = self.X_.reshape([len(self.X_), img_x, img_y, n_channels])
-		self.y_ = y
+		self.X_4Dmatrix = self.X_.reshape([-1, img_x, img_y, n_channels])
 		datagen = keras.preprocessing.image.ImageDataGenerator(
 			# featurewise_center = True,
 			rotation_range = 30,
@@ -77,7 +77,7 @@ class NN(BaseEstimator, ClassifierMixin):
 			horizontal_flip = True,
 			vertical_flip = True,
 			fill_mode = 'nearest')
-		datagen.fit(self.X_matrix)
+		datagen.fit(self.X_4Dmatrix)
 
 		self.model = get_model()
 		earlystop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=15, verbose=0, mode='auto')
