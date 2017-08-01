@@ -23,9 +23,13 @@ from estimators import NN, XGBoost, TestClassifier
 #warnings.filterwarnings('ignore')
 
 def main(config_file, i_model, fold):
+	print('config_file: ' + str(config_file))
+	print('i_model: ' + str(i_model))
+	print('fold: ' + str(fold))
+
 	with open(config_file, 'r') as f:
 		config = yaml.load(f)
-	with open(config_file['hyperparams_file'], 'r') as f:
+	with open(config['hyperparams_file'], 'r') as f:
 		hyperparams = yaml.load(f)
 
 	# Load file of training image names and correct labels.
@@ -36,16 +40,19 @@ def main(config_file, i_model, fold):
 
 	print('Loading features...')
 	if i_model == 0:
+		print('Using NN model.')
 		model = NN()
 		with open(config['train_features_nn'], 'rb') as f:
 			train_features = pickle.load(f)
 		with open(config['test_features_nn'], 'rb') as f:
 			test_features = pickle.load(f)
 	elif i_model == 1:
+		print('Using XGBoost model.')
 		model = XGBoost()
 		train_features = pd.read_csv(config['train_features_gbt'], header=None)
 		test_features = pd.read_csv(config['test_features_gbt'], header=None)
 	elif i_model == 2:
+		print('Using SVM model.')
 		model = svm.SVC(**hyperparams['svm'])
 		train_features = pd.read_csv(config['train_features_gbt'], header=None)
 		test_features = pd.read_csv(config['test_features_gbt'], header=None)
@@ -53,11 +60,11 @@ def main(config_file, i_model, fold):
 		model = TestClassifier()
 		train_features = pd.read_csv(config['train_features_gbt'], header=None)
 		test_features = pd.read_csv(config['test_features_gbt'], header=None)
-
+	print("Loaded train features have shape: " + str(train_features.shape))
 
 	if fold != None:
 		mask_fold_train = train_set['fold'] == fold
-		mask_fold_val = not mask_fold_train
+		mask_fold_val = ~mask_fold_train
 	else:
 		mask_fold_train = np.ones([len(train_labels), 1], dtype=bool)
 
@@ -74,7 +81,10 @@ def main(config_file, i_model, fold):
 
 	# If training on a fold, add predictions for this fold only to train CSV.
 	if fold != None:
-		train_set[model_col_name].loc[mask_fold_val] = clf.predict_proba(train_features[mask_fold_val])
+		# Get predictions for probability of class 0 membership.
+		predictions = clf.predict_proba(train_features[mask_fold_val])[:,0]
+		print(predictions)
+		train_set[model_col_name].loc[mask_fold_val] = predictions
 		train_set.to_csv(config['train_set'], index=None)
 		print('Added predictions for model ' + str(i_model) + ', fold ' + str(fold) + ' to column ' + model_col_name + ' of ' + config['train_set'])
 	else:
@@ -87,6 +97,6 @@ def main(config_file, i_model, fold):
 
 if __name__ == "__main__":
 	if len(sys.argv) == 4:
-		main(sys.argv[1], sys.argv[2], fold=sys.argv[3])
+		main(sys.argv[1], int(sys.argv[2]), fold=int(sys.argv[3]))
 	else:
-		main(sys.argv[1], sys.argv[2], fold=None)
+		main(sys.argv[1], int(sys.argv[2]), fold=None)
