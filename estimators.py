@@ -82,11 +82,12 @@ class NN(BaseEstimator, ClassifierMixin):
 		self.model = get_model()
 		earlystop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=15, verbose=0, mode='auto')
 		# Do the fit.
-		batch_size = 64
 		epochs = 1000
+		batch_size = 64
+		steps_per_epoch = len(self.X_) / batch_size
 		self.model.fit_generator(datagen.flow(self.X_4Dmatrix, self.y_, batch_size=batch_size),
 			callbacks=[earlystop],
-			steps_per_epoch=(len(y) / batch_size),
+			steps_per_epoch=steps_per_epoch,
 			epochs=epochs,
 			verbose=2)
 		# Return the classifier
