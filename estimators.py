@@ -102,7 +102,7 @@ class NN(BaseEstimator, ClassifierMixin):
 		X = check_array(X)
 
 		# Convert X (list of matrices) to a matrix before sending to model.predict().
-		predictions = self.model.predict(X.reshape([len(X), img_x, img_y, n_channels]))
+		predictions = self.model.predict(X.reshape([-1, img_x, img_y, n_channels]))
 		return predictions
 
 # XGBoost classifier

@@ -10,8 +10,9 @@ import datetime
 import os
 import yaml
 import sys
+from utils import datetime_for_filename
 
-def main(config_file, i_model, fold):
+def main(config_file):
 	with open(config_file, 'r') as f:
 		config = yaml.load(f)
 
@@ -26,6 +27,12 @@ def main(config_file, i_model, fold):
 	S = LogisticRegression()
 	S.fit(X=train_set[model_cols], y=train_labels)
 	# Make predictions based on model columns of test set.
-	pred = S.predict(X=test_set[model_cols])
-
+	predictions = S.predict(X=test_set[model_cols])
+	test_set['invasive'] = predictions
 	# Write these predictions to submit file.
+	submit_file = config['submit_prefix'] + '_' + datetime_for_filename() + '.csv'
+	test_set.to_csv(submit_file, header=True, index=None)
+	print("Saved submit file to " + submit_file)
+
+if __name__ == "__main__":
+	main(sys.argv[1])
