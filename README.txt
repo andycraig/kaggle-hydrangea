@@ -1,20 +1,31 @@
+# xgboost code based on:
+# https://www.kaggle.com/the1owl/fractals-of-nature-blend-0-90050
+# CNN code based on code by Finlay Liu, from:
+# https://www.kaggle.com/finlay/naive-bagging-cnn-pb0-985?scriptVersionId=1187890
+
 ##################
+
 # Create folds.
-python create_folds.py dummy.yaml
+python create_folds.py config.yaml
 
 # Generate features.
-python preprocess_nn.py dummy.yaml
-python preprocess_gbt.py dummy.yaml
+python preprocess_nn.py config.yaml
+python preprocess_gbt.py config.yaml
 # SVM uses GBT features.
 
 # Find hyperparameters.
-# Only for SVM for now.
-python fit_hyperparams.py dummy.yaml 2 # SVM
+# No hyperparams for NN.
+# No hyperparams for GBT.
+python fit_hyperparams.py config.yaml 2 # SVM
 
-# Fit models.
-python main.py dummy.yaml 0 # NN
-python main.py dummy.yaml 1 # xgboost
-python main.py dummy.yaml 2 # SVM
+# Fit model for each fold i.
+python main.py config.yaml 0 i # NN
+python main.py config.yaml 1 i # xgboost
+python main.py config.yaml 2 i # SVM
+# Fit model on all data.
+python main.py config.yaml 0   # NN
+python main.py config.yaml 1   # xgboost
+python main.py config.yaml 2   # SVM
 
 # Combine models.
 python stack.py config.yaml

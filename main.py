@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 # -*- coding: utf-8 -*-
-# Based on
-# https://www.kaggle.com/the1owl/fractals-of-nature-blend-0-90050
 
 from sklearn import cross_validation, svm
 from sklearn.ensemble import BaggingClassifier
