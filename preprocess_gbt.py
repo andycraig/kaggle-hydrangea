@@ -10,6 +10,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+import cv2
 
 def main(config_file):
 	with open(config_file, 'r') as f:
@@ -30,8 +31,8 @@ def main(config_file):
 	print("Adding projections onto first " + str(n_components) + " principle components...")
 	pca = PCA(n_components)
 	# Use fit_transform here.
-	train_features_gbt = np.hstack(train_features_gbt,
-							pca.fit_transform(train_features_gbt))
+	train_features_gbt = np.hstack([train_features_gbt,
+							pca.fit_transform(train_features_gbt)])
 	np.savetxt(config['train_features_gbt'], train_features_gbt, delimiter=',')
 	print("Saved training features to " + config['train_features_gbt'])
 	print("Preprocessing GBT test set features...")
@@ -40,8 +41,8 @@ def main(config_file):
 	test_features_gbt = scaler.transform(test_features_gbt_unscaled)
 	print("Adding projections onto principle components...")
 	# Use transform here, to use the same pinciple components from the train data.
-	test_features_gbt = np.hstack(test_features_gbt,
-							pca.transform(test_features_gbt))
+	test_features_gbt = np.hstack([test_features_gbt,
+							pca.transform(test_features_gbt)])
 	np.savetxt(config['test_features_gbt'], test_features_gbt, delimiter=',')
 	print("Saved test features to " + config['test_features_gbt'])
 
@@ -61,38 +62,21 @@ def get_features(path):
 	ft += [scipy.stats.skew(img[:,:,0].ravel())]
 	ft += [scipy.stats.skew(img[:,:,1].ravel())]
 	ft += [scipy.stats.skew(img[:,:,2].ravel())]
-	# bw = cv2.equalizeHist(cv2.cvtColor(img, cv2.COLOR_RGB2GRAY))
-	# ft += list(cv2.HuMoments(cv2.moments(bw)).flatten())
-
-	# Histograms:
-	ft += m.histogram() # All bands, concatenated.
-	# Get the bands:
-	#im.split() ⇒ sequence
-	# BW:
-	# img.convert(mode='L')
-	#Returns a tuple of individual image bands from an image. For example, splitting an “RGB” image creates three new images each containing a copy of one of the original bands (red, green, blue).
-	# ft += list(cv2.calcHist([bw],[0],None,[64],[0,256]).flatten()) #bw
-	# ft += list(cv2.calcHist([img],[0],None,[64],[0,256]).flatten()) #r
-	# ft += list(cv2.calcHist([img],[1],None,[64],[0,256]).flatten()) #g
-	# ft += list(cv2.calcHist([img],[2],None,[64],[0,256]).flatten()) #b
-	# m, s = cv2.meanStdDev(img) #mean and standard deviation
-	# ft += list(m.ravel())
-	# ft += list(s.ravel())
-
-	#Laplacian:
-	#scipy.ndimage.filters.laplace¶
-	# I don't think this is the same thing.
-	# ft += [cv2.Laplacian(bw, cv2.CV_64F).var()]
-	# ft += [cv2.Laplacian(img, cv2.CV_64F).var()]
-
-	# Sobel:
-	#image = Image.open('your_image.png')
-	#image = image.filter(ImageFilter.FIND_EDGES)
-
-	# ft += [cv2.Sobel(bw,cv2.CV_64F,1,0,ksize=5).var()]
-	# ft += [cv2.Sobel(bw,cv2.CV_64F,0,1,ksize=5).var()]
-	# ft += [cv2.Sobel(img,cv2.CV_64F,1,0,ksize=5).var()]
-	# ft += [cv2.Sobel(img,cv2.CV_64F,0,1,ksize=5).var()]
+	bw = cv2.equalizeHist(cv2.cvtColor(img, cv2.COLOR_RGB2GRAY))
+	ft += list(cv2.HuMoments(cv2.moments(bw)).flatten())
+	ft += list(cv2.calcHist([bw],[0],None,[64],[0,256]).flatten()) #bw
+	ft += list(cv2.calcHist([img],[0],None,[64],[0,256]).flatten()) #r
+	ft += list(cv2.calcHist([img],[1],None,[64],[0,256]).flatten()) #g
+	ft += list(cv2.calcHist([img],[2],None,[64],[0,256]).flatten()) #b
+	m, s = cv2.meanStdDev(img) #mean and standard deviation
+	ft += list(m.ravel())
+	ft += list(s.ravel())
+	ft += [cv2.Laplacian(bw, cv2.CV_64F).var()]
+	ft += [cv2.Laplacian(img, cv2.CV_64F).var()]
+	ft += [cv2.Sobel(bw,cv2.CV_64F,1,0,ksize=5).var()]
+	ft += [cv2.Sobel(bw,cv2.CV_64F,0,1,ksize=5).var()]
+	ft += [cv2.Sobel(img,cv2.CV_64F,1,0,ksize=5).var()]
+	ft += [cv2.Sobel(img,cv2.CV_64F,0,1,ksize=5).var()]
 	return ft
 
 def preprocess_gbt(folder_name, names_and_labels):
