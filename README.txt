@@ -18,14 +18,10 @@ python preprocess_gbt.py config.yaml
 # No hyperparams for GBT.
 python fit_hyperparams.py config.yaml 2 # SVM
 
-# Fit model for each fold i.
-python main.py config.yaml 0 i # NN
-python main.py config.yaml 1 i # xgboost
-python main.py config.yaml 2 i # SVM
-# Fit model on all data.
-python main.py config.yaml 0   # NN
-python main.py config.yaml 1   # xgboost
-python main.py config.yaml 2   # SVM
+# Fit models.
+python train_loop.py config.yaml 0 # NN
+python train_loop.py config.yaml 1 # GBT
+python train_loop.py config.yaml 2 # SVM
 
 # Combine models.
 python stack.py config.yaml
