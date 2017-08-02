@@ -66,6 +66,7 @@ class NN(BaseEstimator, ClassifierMixin):
 		# self.X_ is an n x (128*128*3) matrices.
 		# For CNN, we want an nx128x128x3 matrix.
 		self.X_4Dmatrix = self.X_.reshape([-1, img_x, img_y, n_channels])
+
 		datagen = keras.preprocessing.image.ImageDataGenerator(
 			# featurewise_center = True,
 			rotation_range = 30,
@@ -80,13 +81,13 @@ class NN(BaseEstimator, ClassifierMixin):
 		datagen.fit(self.X_4Dmatrix)
 
 		self.model = get_model()
-		earlystop = keras.callbacks.EarlyStopping(monitor='val_loss', patience=15, verbose=0, mode='auto')
+
 		# Do the fit.
 		epochs = 1000
 		batch_size = 64
 		steps_per_epoch = len(self.X_) / batch_size
+		print('steps_per_epoch: ', steps_per_epoch)
 		self.model.fit_generator(datagen.flow(self.X_4Dmatrix, self.y_, batch_size=batch_size),
-			callbacks=[earlystop],
 			steps_per_epoch=steps_per_epoch,
 			epochs=epochs,
 			verbose=2)
