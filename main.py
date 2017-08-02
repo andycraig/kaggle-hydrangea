@@ -71,7 +71,6 @@ def main(config_file, i_model, fold):
 	n_estimators = 8
 	max_samples = 1.0 * (n_estimators - 1) / n_estimators
 	clf = BaggingClassifier(model, n_estimators=n_estimators, max_samples=max_samples) #, max_features=1)
-
 	clf.fit(X=train_features[mask_fold_train], y=train_labels[mask_fold_train])
 
 	model_col_name = 'M' + str(i_model)
