@@ -2,6 +2,7 @@
 
 # -*- coding: utf-8 -*-
 
+from sklearn.linear_model import LogisticRegression
 import pandas as pd
 import numpy as np
 import scipy
@@ -25,13 +26,16 @@ def main(config_file):
 	# Fit stacking model predicting 'invasive' from model columns.
 	model_cols = ['M' + str(x) for x in range(config['n_models'])]
 	S = LogisticRegression()
-	S.fit(X=train_set[model_cols], y=train_labels)
+	S.fit(X=train_set.loc[:,model_cols], y=train_labels)
 	# Make predictions based on model columns of test set.
-	predictions = S.predict(X=test_set[model_cols])
+	predictions = S.predict_proba(X=test_set.loc[:,model_cols])[:,1]
 	test_set['invasive'] = predictions
 	# Write these predictions to submit file.
 	submit_file = config['submit_prefix'] + '_' + datetime_for_filename() + '.csv'
-	test_set.to_csv(submit_file, header=True, index=None)
+	test_set[['name', 'invasive']].to_csv(submit_file, header=True, index=None)
+	# Some reporting.
+	print("Stacking model parameters:")
+	print("Intercept:" + str(S.intercept_) + " Cofficients: " + str(S.coef_))
 	print("Saved submit file to " + submit_file)
 
 if __name__ == "__main__":

@@ -26,7 +26,8 @@ def main(config_file):
 
 	# Write folds into CSV.
 	df['fold'] = permuted_fold_ids
-	df.to_csv(config['train_set'], index=False)
+	df.to_csv(config['train_set'], header=True, index=False)
+	print("Saved train set with folds to " + config['train_set'])
 
 if __name__ == "__main__":
 	main(sys.argv[1])
