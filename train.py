@@ -39,19 +39,19 @@ def main(config_file, i_model, fold):
 	print('Loading features...')
 	if i_model == 0:
 		print('Using NN model.')
-		model = NN()
+		model = NN(**hyperparams['nn'])
 		with open(config['train_features_nn'], 'rb') as f:
 			train_features = pickle.load(f)
 		with open(config['test_features_nn'], 'rb') as f:
 			test_features = pickle.load(f)
 	elif i_model == 1:
 		print('Using XGBoost model.')
-		model = XGBoost()
+		model = XGBoost(**hyperparams['gbt'])
 		train_features = pd.read_csv(config['train_features_gbt'], header=None)
 		test_features = pd.read_csv(config['test_features_gbt'], header=None)
 	elif i_model == 2:
 		print('Using SVM model.')
-		model = svm.SVC(**hyperparams['svm'])
+		model = svm.SVC(probability=True, **hyperparams['svm'])
 		train_features = pd.read_csv(config['train_features_gbt'], header=None)
 		test_features = pd.read_csv(config['test_features_gbt'], header=None)
 	else:
@@ -60,24 +60,28 @@ def main(config_file, i_model, fold):
 		test_features = pd.read_csv(config['test_features_gbt'], header=None)
 
 	if fold != None:
-		mask_fold_train = np.array(train_set['fold'] == fold)
-		mask_fold_val = ~mask_fold_train
+		mask_fold_val = np.array(train_set['fold'] == fold)
+		mask_fold_train = ~mask_fold_val
 	else:
 		mask_fold_train = np.ones(len(train_labels), dtype=bool)
 
 	print('Fitting...')
-	n_estimators = 8
+	n_estimators = config['n_bagging_estimators']
 	max_samples = 1.0 * (n_estimators - 1) / n_estimators
 	clf = BaggingClassifier(model, n_estimators=n_estimators, max_samples=max_samples)
+	#clf = model
 	clf.fit(X=train_features[mask_fold_train], y=train_labels[mask_fold_train])
 
-	model_col_name = 'M' + str(i_model)
-
 	print("Predicting...")
+	model_col_name = 'M' + str(i_model)
 	# If training on a fold, add predictions for this fold only to train CSV.
 	if fold != None:
 		# Get predictions for probability of class 1 membership.
 		predictions = clf.predict_proba(train_features[mask_fold_val])[:,1]
+		# If there isn't yet a column for the model's predictions, add one.
+		# Warns about setting on copy of a slice, but seems to work.
+		if not model_col_name in train_set:
+			train_set[model_col_name] = np.nan
 		train_set[model_col_name].loc[mask_fold_val] = predictions
 		train_set.to_csv(config['train_set'], index=None)
 		print('Added predictions for model ' + str(i_model) + ', fold ' + str(fold) + ' to column ' + model_col_name + ' of ' + config['train_set'])

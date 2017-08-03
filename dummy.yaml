@@ -11,3 +11,4 @@ submit_prefix: ../test_submit
 hyperparams_file: dummy_hyperparams.yaml
 n_models: 3
 n_folds: 5
+n_bagging_estimators: 4

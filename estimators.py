@@ -49,8 +49,9 @@ class TestClassifier(BaseEstimator, ClassifierMixin):
 # NN classifier
 class NN(BaseEstimator, ClassifierMixin):
 
-	def __init__(self, demo_param='demo'):
-		self.demo_param = demo_param
+	def __init__(self, epochs=1000, batch_size=64):
+		self.epochs = epochs
+		self.batch_size = batch_size
 
 	def fit(self, X, y):
 		# Check that X and y have correct shape.
@@ -80,18 +81,15 @@ class NN(BaseEstimator, ClassifierMixin):
 		self.model = get_model()
 
 		# Do the fit.
-		epochs = 1000
-		batch_size = 64
-		steps_per_epoch = len(self.X_) / batch_size
-		print('steps_per_epoch: ', steps_per_epoch)
-		self.model.fit_generator(datagen.flow(self.X_4Dmatrix, self.y_, batch_size=batch_size),
+		steps_per_epoch = len(self.X_) / self.batch_size
+		self.model.fit_generator(datagen.flow(self.X_4Dmatrix, self.y_, batch_size=self.batch_size),
 			steps_per_epoch=steps_per_epoch,
-			epochs=epochs,
+			epochs=self.epochs,
 			verbose=2)
 		# Return the classifier
 		return self
 
-	def predict(self, X):
+	def predict_proba(self, X):
 
 		# Check is fit had been called
 		check_is_fitted(self, ['X_', 'y_'])
@@ -100,14 +98,16 @@ class NN(BaseEstimator, ClassifierMixin):
 		X = check_array(X)
 
 		# Convert X (list of matrices) to a matrix before sending to model.predict().
-		predictions = self.model.predict(X.reshape([-1, img_x, img_y, n_channels]))
-		return predictions
+		predictions_class_1 = self.model.predict(X.reshape([-1, img_x, img_y, n_channels]))
+		predictions_class_1_tranpose = predictions_class_1.reshape([-1, 1])
+		preda = np.hstack([1-predictions_class_1_tranpose, predictions_class_1_tranpose])
+		return preda
 
 # XGBoost classifier
 class XGBoost(BaseEstimator, ClassifierMixin):
 
-	def __init__(self, demo_param='demo'):
-		self.demo_param = demo_param
+	def __init__(self):
+		pass
 
 	def fit(self, X, y):
 
@@ -147,7 +147,7 @@ class XGBoost(BaseEstimator, ClassifierMixin):
 
 		return self
 
-	def predict(self, X):
+	def predict_proba(self, X):
 
 		# Check is fit had been called
 		check_is_fitted(self, ['X_', 'y_'])
@@ -156,5 +156,7 @@ class XGBoost(BaseEstimator, ClassifierMixin):
 		X = check_array(X)
 
 		xgtest = xgb.DMatrix(X)
-		predictions = self.model.predict(xgtest,ntree_limit=self.model.best_ntree_limit)
-		return predictions
+		predictions_class_1 = self.model.predict(xgtest,ntree_limit=self.model.best_ntree_limit)
+		predictions_class_1_tranpose = predictions_class_1.reshape([-1, 1])
+		preda = np.hstack([1-predictions_class_1_tranpose, predictions_class_1_tranpose])
+		return preda
