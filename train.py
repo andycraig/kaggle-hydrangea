@@ -88,6 +88,10 @@ def main(config_file, i_model, fold):
 	else:
 		# If training on whole training set, add predictions for whole test set to test CSV.
 		predictions = clf.predict_proba(test_features)[:,1]
+		# If there isn't yet a column for the model's predictions, add one.
+		# Warns about setting on copy of a slice, but seems to work.
+		if not model_col_name in test_set:
+			test_set[model_col_name] = np.nan
 		test_set[model_col_name].loc[:] = predictions
 		test_set.to_csv(config['test_set'], index=None)
 		print('Added predictions for model ' + str(i_model) + ' to column ' + model_col_name + ' of ' + config['test_set'])
