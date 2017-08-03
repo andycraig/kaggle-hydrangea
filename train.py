@@ -65,8 +65,6 @@ def main(config_file, i_model, fold):
 	else:
 		mask_fold_train = np.ones(len(train_labels), dtype=bool)
 
-	print(train_features.shape)
-	print(test_features.shape)
 	print('Fitting...')
 	n_estimators = 8
 	max_samples = 1.0 * (n_estimators - 1) / n_estimators
