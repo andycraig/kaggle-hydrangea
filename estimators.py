@@ -11,10 +11,7 @@ import pandas as pd
 import numpy as np
 from tensorflow.contrib import keras
 from sklearn import cross_validation
-try:
-	import xgboost as xgb
-except ImportError as e:
-	print("Couldn't find module xgboost. Won't be able to use xgboost.")
+import xgboost as xgb
 
 img_x = 128
 img_y = 128

@@ -63,8 +63,10 @@ def main(config_file, i_model, fold):
 		mask_fold_train = np.array(train_set['fold'] == fold)
 		mask_fold_val = ~mask_fold_train
 	else:
-		mask_fold_train = np.ones([1, len(train_labels)], dtype=bool)
+		mask_fold_train = np.ones(len(train_labels), dtype=bool)
 
+	print(train_features.shape)
+	print(test_features.shape)
 	print('Fitting...')
 	n_estimators = 8
 	max_samples = 1.0 * (n_estimators - 1) / n_estimators
@@ -73,6 +75,7 @@ def main(config_file, i_model, fold):
 
 	model_col_name = 'M' + str(i_model)
 
+	print("Predicting...")
 	# If training on a fold, add predictions for this fold only to train CSV.
 	if fold != None:
 		# Get predictions for probability of class 1 membership.
@@ -82,7 +85,6 @@ def main(config_file, i_model, fold):
 		print('Added predictions for model ' + str(i_model) + ', fold ' + str(fold) + ' to column ' + model_col_name + ' of ' + config['train_set'])
 	else:
 		# If training on whole training set, add predictions for whole test set to test CSV.
-		print('Predicting...')
 		predictions = clf.predict_proba(test_features)[:,1]
 		test_set[model_col_name].loc[:] = predictions
 		test_set.to_csv(config['test_set'], index=None)
