@@ -61,6 +61,11 @@ def main(config_file, i_model, fold):
 			train_features = pickle.load(f)
 		with open(config['test_features_nn'], 'rb') as f:
 			test_features = pickle.load(f)
+	elif i_model == 4:
+		print('Using XGBoost (with log loss) model.')
+		model = XGBoost(**hyperparams['gbt4'])
+		train_features = pd.read_csv(config['train_features_gbt'], header=None)
+		test_features = pd.read_csv(config['test_features_gbt'], header=None)
 	else:
 		model = TestClassifier()
 		train_features = pd.read_csv(config['train_features_gbt'], header=None)

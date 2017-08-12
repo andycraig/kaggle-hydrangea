@@ -109,8 +109,9 @@ class NN(BaseEstimator, ClassifierMixin):
 # XGBoost classifier
 class XGBoost(BaseEstimator, ClassifierMixin):
 
-	def __init__(self, n_pca_components = 0):
+	def __init__(self, n_pca_components = 0, eval_metric="auc"):
 		self.n_pca_components = n_pca_components
+		self.eval_metric = eval_metric
 
 	def fit(self, X, y):
 
@@ -139,7 +140,7 @@ class XGBoost(BaseEstimator, ClassifierMixin):
 			'seed': 4
 		}
 		params['objective'] = 'binary:logistic'
-		params['eval_metric'] = "auc"
+		params['eval_metric'] = self.eval_metric
 		params['min_child_weight'] = 15
 		params['cosample_bytree'] = 0.8
 		params['cosample_bylevel'] = 0.9
