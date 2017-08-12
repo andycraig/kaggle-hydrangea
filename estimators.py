@@ -49,9 +49,10 @@ class TestClassifier(BaseEstimator, ClassifierMixin):
 # NN classifier
 class NN(BaseEstimator, ClassifierMixin):
 
-	def __init__(self, epochs=1000, batch_size=64):
+	def __init__(self, epochs=1000, batch_size=64, extra_layer=False):
 		self.epochs = epochs
 		self.batch_size = batch_size
+		self.extra_layer = extra_layer
 
 	def fit(self, X, y):
 		# Check that X and y have correct shape.
@@ -78,7 +79,7 @@ class NN(BaseEstimator, ClassifierMixin):
 			fill_mode = 'nearest')
 		datagen.fit(self.X_4Dmatrix)
 
-		self.model = get_model()
+		self.model = get_model(self.extra_layer)
 
 		# Do the fit.
 		steps_per_epoch = len(self.X_) / self.batch_size

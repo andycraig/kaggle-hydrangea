@@ -54,6 +54,13 @@ def main(config_file, i_model, fold):
 		model = svm.SVC(probability=True, **hyperparams['svm'])
 		train_features = pd.read_csv(config['train_features_gbt'], header=None)
 		test_features = pd.read_csv(config['test_features_gbt'], header=None)
+	elif i_model == 3:
+		print('Using NN (with extra layer) model.')
+		model = NN(**hyperparams['nn3'])
+		with open(config['train_features_nn'], 'rb') as f:
+			train_features = pickle.load(f)
+		with open(config['test_features_nn'], 'rb') as f:
+			test_features = pickle.load(f)
 	else:
 		model = TestClassifier()
 		train_features = pd.read_csv(config['train_features_gbt'], header=None)

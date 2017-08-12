@@ -1,10 +1,9 @@
-# xgboost code based on:
-# https://www.kaggle.com/the1owl/fractals-of-nature-blend-0-90050
-# CNN code based on code by Finlay Liu, from:
-# https://www.kaggle.com/finlay/naive-bagging-cnn-pb0-985?scriptVersionId=1187890
+xgboost code based on:
+https://www.kaggle.com/the1owl/fractals-of-nature-blend-0-90050
+CNN code based on code by Finlay Liu, from:
+https://www.kaggle.com/finlay/naive-bagging-cnn-pb0-985?scriptVersionId=1187890
 
-##################
-
+```
 # Create folds.
 python create_folds.py config.yaml
 
@@ -25,3 +24,4 @@ python train_loop.py config.yaml 2 # SVM
 
 # Combine models.
 python stack.py config.yaml
+```
