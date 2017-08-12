@@ -12,6 +12,8 @@ import numpy as np
 from tensorflow.contrib import keras
 from sklearn import cross_validation
 import xgboost as xgb
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 
 img_x = 128
 img_y = 128
@@ -107,8 +109,8 @@ class NN(BaseEstimator, ClassifierMixin):
 # XGBoost classifier
 class XGBoost(BaseEstimator, ClassifierMixin):
 
-	def __init__(self):
-		pass
+	def __init__(self, n_pca_components = 0):
+		self.n_pca_components = n_pca_components
 
 	def fit(self, X, y):
 
@@ -116,11 +118,18 @@ class XGBoost(BaseEstimator, ClassifierMixin):
 		X, y = check_X_y(X, y)
 		# Store the classes seen during fit
 		self.classes_ = unique_labels(y)
-
 		self.X_ = X
 		self.y_ = y
+
+		# Center and scale.
+		self.scaler = StandardScaler().fit(self.X_)
+		X_scaled = self.scaler.transform(self.X_)
+		# Add projections onto first n_pca_components principle components.
+		self.pca = PCA(self.n_pca_components)
+		# Use fit_transform here.
+		X_scaled_PCA = np.hstack([X_scaled, self.pca.fit_transform(X_scaled)])
 		# Return the classifier
-		xgtrain = xgb.DMatrix(self.X_, label=self.y_)
+		xgtrain = xgb.DMatrix(X_scaled_PCA, label=self.y_)
 
 		params = {
 			'eta': 0.05, #0.03
@@ -156,7 +165,13 @@ class XGBoost(BaseEstimator, ClassifierMixin):
 		# Input validation
 		X = check_array(X)
 
-		xgtest = xgb.DMatrix(X)
+		# Center and scale (same transformation as for train features).
+		X_scaled = self.scaler.transform(X)
+		# Adding projections onto principle components.
+		# Use transform here, to use the same pinciple components from the train data.
+		X_scaled_PCA = np.hstack([X_scaled,
+								self.pca.transform(X_scaled)])
+		xgtest = xgb.DMatrix(X_scaled_PCA)
 		predictions_class_1 = self.model.predict(xgtest,ntree_limit=self.model.best_ntree_limit)
 		predictions_class_1_tranpose = predictions_class_1.reshape([-1, 1])
 		preda = np.hstack([1-predictions_class_1_tranpose, predictions_class_1_tranpose])

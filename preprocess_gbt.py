@@ -8,8 +8,6 @@ import yaml
 import sys
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
 import cv2
 
 def main(config_file):
@@ -23,26 +21,10 @@ def main(config_file):
 	# Preprocess GBT features.
 
 	print("Preprocessing GBT training set features...")
-	train_features_gbt_unscaled = preprocess_gbt(config['train_imgs'], train_set)
-	print("Centering and scaling...")
-	scaler = StandardScaler().fit(train_features_gbt_unscaled)
-	train_features_gbt = scaler.transform(train_features_gbt_unscaled)
-	n_components = 3
-	print("Adding projections onto first " + str(n_components) + " principle components...")
-	pca = PCA(n_components)
-	# Use fit_transform here.
-	train_features_gbt = np.hstack([train_features_gbt,
-							pca.fit_transform(train_features_gbt)])
+	train_features_gbt = preprocess_gbt(config['train_imgs'], train_set)
 	np.savetxt(config['train_features_gbt'], train_features_gbt, delimiter=',')
 	print("Saved training features to " + config['train_features_gbt'])
-	print("Preprocessing GBT test set features...")
-	test_features_gbt_unscaled = preprocess_gbt(config['test_imgs'], test_set)
-	print("Centering and scaling (same transformation as for train features)...")
-	test_features_gbt = scaler.transform(test_features_gbt_unscaled)
-	print("Adding projections onto principle components...")
-	# Use transform here, to use the same pinciple components from the train data.
-	test_features_gbt = np.hstack([test_features_gbt,
-							pca.transform(test_features_gbt)])
+	test_features_gbt = preprocess_gbt(config['test_imgs'], test_set)
 	np.savetxt(config['test_features_gbt'], test_features_gbt, delimiter=',')
 	print("Saved test features to " + config['test_features_gbt'])
 

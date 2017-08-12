@@ -1,4 +1,4 @@
 svm: {C: 0.1, gamma: 0.1}
 nn: {batch_size: 64, epochs: 1000}
 nn3: {batch_size: 64, epochs: 1000, extra_layer: True}
-gbt: {}
+gbt: {n_pca_components: }
