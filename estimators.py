@@ -150,7 +150,6 @@ class XGBoost(BaseEstimator, ClassifierMixin):
 		params['gamma'] = 1
 		params['alpha'] = 0
 		params['lambda'] = 1
-		#params['base_score'] =  0.63
 
 		watchlist = [(xgtrain,'train')]
 		self.model = xgb.train(list(params.items()), xgtrain, 5000, watchlist,
