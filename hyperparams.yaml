@@ -1,5 +1,5 @@
-svm: {C: 0.1, gamma: 0.1}
+gbt: {gamma: 2, max_depth: 6, min_child_weight: 5, n_pca_components: 3, scoring: roc_auc}
+gbt4: {gamma: 2, max_depth: 6, min_child_weight: 5, eval_metric: logloss, n_pca_components: 3, scoring: neg_log_loss}
 nn: {batch_size: 64, epochs: 1000}
-nn3: {batch_size: 64, epochs: 1000, extra_layer: True}
-gbt: {n_pca_components: 3}
-gbt4: {n_pca_components: 3, eval_metric: logloss}
+nn3: {batch_size: 64, epochs: 1000, extra_layer: true}
+svm: {C: 0.1, gamma: 0.1}

@@ -25,6 +25,8 @@ from estimators import NN, XGBoost, TestClassifier
 def main(config_file, i_model):
 	with open(config_file, 'r') as f:
 		config = yaml.load(f)
+	with open(config['hyperparams_file'], 'r') as f:
+		hyperparams = yaml.load(f)
 
 	# Load file of training image names and correct labels.
 	train_set = pd.read_csv(config['train_set'])
@@ -36,14 +38,20 @@ def main(config_file, i_model):
 		with open(config['train_features_nn'], 'rb') as f:
 			train_features = pickle.load(f)
 	elif i_model == 1:
-		raise NotImplementedError('No hyperparams to tune for xgboost model.')
-		model = XGBoost
+		model = XGBoost()
 		train_features = pd.read_csv(config['train_features_gbt'], header=None)
+		tuned_parameters = {'min_child_weight': [3, 5, 7], 'max_depth': [5,  6,  7], 'gamma': [1.5, 2, 2.5] }
+		category_in_hyperparams_file = 'gbt'
 	elif i_model == 2:
 		model = svm.SVC()
 		train_features = pd.read_csv(config['train_features_gbt'], header=None)
 		tuned_parameters = {'gamma': [1e1, 1e0, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5], 'C': [00.1, 0.1, 1, 10, 100, 1000]}
 		category_in_hyperparams_file = 'svm'
+	elif i_model == 4:
+		model = XGBoost(eval_metric="logloss")
+		train_features = pd.read_csv(config['train_features_gbt'], header=None)
+		tuned_parameters = {'min_child_weight': [3, 5, 7], 'max_depth': [5,  6,  7], 'gamma': [1.5, 2, 2.5] }
+		category_in_hyperparams_file = 'gbt4'
 	else:
 		raise NotImplementedError('No hyperparams to tune for test model.')
 		model = TestClassifier()
@@ -51,14 +59,12 @@ def main(config_file, i_model):
 		test_features = pd.read_csv(config['test_features_gbt'], header=None)
 
 	print('Finding hyperparameters...')
-	clf = GridSearchCV(model, tuned_parameters, cv=5)
+	clf = GridSearchCV(model, tuned_parameters, cv=5,
+				scoring=hyperparams[category_in_hyperparams_file]['scoring'])
 	clf.fit(train_features, train_labels)
 	print('Found best hyperparams:')
 	print(clf.best_params_)
 
-	# Write chosen hyperparams to file.
-	with open(config['hyperparams_file'], 'r') as f:
-		hyperparams = yaml.load(f)
 	# Put grid search best params in hyperparams dict.
 	for key in clf.best_params_:
 		hyperparams[category_in_hyperparams_file][key] = clf.best_params_[key]

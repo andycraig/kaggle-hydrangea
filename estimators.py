@@ -109,9 +109,13 @@ class NN(BaseEstimator, ClassifierMixin):
 # XGBoost classifier
 class XGBoost(BaseEstimator, ClassifierMixin):
 
-	def __init__(self, n_pca_components = 0, eval_metric="auc"):
+	def __init__(self, n_pca_components = 0, eval_metric="auc", min_child_weight=15, max_depth=4, gamma=1, scoring=None):
 		self.n_pca_components = n_pca_components
 		self.eval_metric = eval_metric
+		self.min_child_weight = min_child_weight
+		self.max_depth = max_depth
+		self.gamma = gamma
+		# Ignore scoring parameter.
 
 	def fit(self, X, y):
 
@@ -141,13 +145,13 @@ class XGBoost(BaseEstimator, ClassifierMixin):
 		}
 		params['objective'] = 'binary:logistic'
 		params['eval_metric'] = self.eval_metric
-		params['min_child_weight'] = 15
+		params['min_child_weight'] = self.min_child_weight
 		params['cosample_bytree'] = 0.8
 		params['cosample_bylevel'] = 0.9
-		params['max_depth'] = 4
+		params['max_depth'] = self.max_depth
 		params['subsample'] = 0.9
 		params['max_delta_step'] = 10
-		params['gamma'] = 1
+		params['gamma'] = self.gamma
 		params['alpha'] = 0
 		params['lambda'] = 1
 

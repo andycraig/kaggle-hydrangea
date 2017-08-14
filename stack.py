@@ -24,7 +24,8 @@ def main(config_file):
 	test_set = pd.read_csv(config['test_set'])
 
 	# Fit stacking model predicting 'invasive' from model columns.
-	model_cols = ['M' + str(x) for x in range(config['n_models'])]
+	# Model predictions are those in columns beginning with 'M'.
+	model_cols = [x for x in test_set.columns if x[0] == 'M']
 	S = LogisticRegression()
 	S.fit(X=train_set.loc[:,model_cols], y=train_labels)
 	# Make predictions based on model columns of test set.
