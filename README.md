@@ -1,6 +1,6 @@
-# Kaggle invasive plant classification competition
+# Kaggle Invasive Species Monitoring
 
-This is my solution to the invasive plant classification challenge on Kaggle, which ended mid August 2017.
+This is my solution to the [Invasive Species Monitoring Kaggle prediction competition](https://www.kaggle.com/c/invasive-species-monitoring), which ended mid August 2017.
 
 Techniques used:
 - Convolutional deep neural networks
@@ -12,7 +12,7 @@ Techniques used:
 Tools used:
 - Keras (on top of TensorFlow)
 - XGBoost
-- Scikit-learn
+- scikit-learn
 - Python
 
 # To run
@@ -43,12 +43,9 @@ python stack.py config.yaml
 # Classifier overview
 
 My ensemble consisted of four base models:
-- A convolutional neural networks (CNN), based on code from Finlay Liu (
-https://www.kaggle.com/finlay/naive-bagging-cnn-pb0-985?scriptVersionId=1187890
-);
+- A convolutional neural networks (CNN), based on [code from Finlay Liu](https://www.kaggle.com/finlay/naive-bagging-cnn-pb0-985?scriptVersionId=1187890);
 - Another CNN, with an extra layer;
-- A gradient boosting trees (GBT) (trained using XGBoost) with AUC score, based on code from ( https://www.kaggle.com/the1owl/fractals-of-nature-blend-0-90050
-);
+- A gradient boosting trees (GBT) (trained using XGBoost) with AUC score, based on [code from Paulo Pinto]( https://www.kaggle.com/the1owl/fractals-of-nature-blend-0-90050);
 - Another GBT, with log likelihood loss.
 
 From each of these I created a bagging ensemble, and then I stacked those together using regularised logistic regression.
@@ -59,9 +56,7 @@ I originally included a support vector machine (SVM), but it performed so badly 
 
 # Discussion
 
-I was fairly sure this would be a competition dominated by deep neural networks, as these have dominated recent image-related competitions.  I did not expect a  high position in this competition, as the computers I had access to lacked the GPU RAM to run code made publicly available by Finlay Liu (
-https://www.kaggle.com/finlay/naive-bagging-cnn-pb0-985?scriptVersionId=1187890
-), which reported achieved 98.5% accuracy on the public test set. Rather, I saw this competition as a good chance to try linking a variety of machine learning tools together using the Python library Scikit-learn, which I had not used before, and in this sense I felt it was a great success.
+I was fairly sure this would be a competition dominated by deep neural networks (DNNs), as these have dominated recent image-related competitions.  I did not expect a  high position in this competition, as the computers I had access to lacked the GPU RAM to run [code made publicly available by Finlay Liu](https://www.kaggle.com/finlay/naive-bagging-cnn-pb0-985?scriptVersionId=1187890), which reported achieved 98.5% accuracy on the public test set. Rather, I saw this competition as a good chance to try linking a variety of machine learning tools together using the Python library scikit-learn, which I had not used before, and in this sense I felt it was a success.
 
 There were several more approaches I would have liked to have tried in working on this data set:
 - Optimising hyperparameters using Gaussian processes, rather than cross-validation;
